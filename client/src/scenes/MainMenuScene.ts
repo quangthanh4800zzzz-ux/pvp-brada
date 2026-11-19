@@ -2,9 +2,9 @@ import Phaser from 'phaser';
 import { runGuarded } from './crashGuard.js';
 
 const MENU_ITEMS = [
-  { label: 'VS BATTLE', sceneKey: 'Battle', mode: 'battle' },
-  { label: 'VS AI', sceneKey: 'Battle', mode: 'vsai' },
-  { label: 'COMBAT LAB', sceneKey: 'Training', mode: 'training' },
+  { label: 'VS BATTLE', sceneKey: 'CharacterSelect', mode: 'battle' },
+  { label: 'VS AI', sceneKey: 'CharacterSelect', mode: 'vsai' },
+  { label: 'COMBAT LAB', sceneKey: 'CharacterSelect', mode: 'training' },
   { label: 'SETTINGS', sceneKey: 'Settings', mode: '' },
   { label: 'ONLINE ARENA', sceneKey: '', mode: '' },
   { label: 'CHARACTER COLLECTION', sceneKey: '', mode: '' }
@@ -45,7 +45,7 @@ export class MainMenuScene extends Phaser.Scene {
       fontStyle: 'bold'
     }).setOrigin(0.5);
     this.tweens.add({ targets: title, alpha: { from: 1, to: 0.75 }, duration: 900, yoyo: true, repeat: -1 });
-    this.add.text(320, 66, 'v0.1 — core build (Phase 1 + 2)', { fontFamily: 'monospace', fontSize: '11px', color: '#6a6f8a' }).setOrigin(0.5);
+    this.add.text(320, 66, 'v0.2 — Phase 3: 2 fighters · skills · ultimate · passive', { fontFamily: 'monospace', fontSize: '11px', color: '#6a6f8a' }).setOrigin(0.5);
 
     MENU_ITEMS.forEach((item, index) => {
       const text = this.add.text(220, 140 + index * 34, item.label, {

@@ -1,5 +1,5 @@
 import { clamp } from '@shared/math.js';
-import type { AttackDef, CharacterProfile, Facing } from '@shared/types/index.js';
+import type { AttackDef, BuffDef, CharacterProfile, Facing, SkillDef } from '@shared/types/index.js';
 import { RigidBody } from '../physics/RigidBody.js';
 
 export const FIGHTER_WIDTH = 16;
@@ -53,6 +53,12 @@ export class FighterSim {
   comboSpentCancel = false;
 
   cooldowns: Map<string, number> = new Map();
+  passiveCooldowns: Map<string, number> = new Map();
+
+  buffTicks = 0;
+  buffSpeed = 1;
+  buffAtk = 1;
+  buffId: string | null = null;
 
   constructor(private readonly opts: FighterOptions) {
     this.profile = opts.profile;
@@ -91,7 +97,37 @@ export class FighterSim {
   }
 
   speed(): number {
-    return 120 * (this.profile.stats.spd / 100);
+    return 120 * (this.profile.stats.spd / 100) * this.buffSpeed;
+  }
+
+  atkFactor(): number {
+    return (this.profile.stats.atk / 100) * this.buffAtk;
+  }
+
+  skills(): SkillDef[] {
+    return this.profile.skills ?? [];
+  }
+
+  skillBySlot(slot: number): SkillDef | undefined {
+    return this.skills().find((s) => s.slot === slot);
+  }
+
+  applyBuff(id: string, def: BuffDef): void {
+    this.buffId = id;
+    this.buffTicks = def.durationFrames;
+    this.buffSpeed = def.speedMultiplier ?? 1;
+    this.buffAtk = def.atkMultiplier ?? 1;
+  }
+
+  clearBuff(): void {
+    this.buffId = null;
+    this.buffTicks = 0;
+    this.buffSpeed = 1;
+    this.buffAtk = 1;
+  }
+
+  get buffed(): boolean {
+    return this.buffTicks > 0;
   }
 
   jumpVelocity(): number {
@@ -111,9 +147,16 @@ export class FighterSim {
     return (this.cooldowns.get(id) ?? 0) > 0;
   }
 
+  passiveReady(id: string): boolean {
+    return !((this.passiveCooldowns.get(id) ?? 0) > 0);
+  }
+
   tickCooldowns(): void {
     for (const [key, frames] of this.cooldowns) {
       if (frames > 0) this.cooldowns.set(key, frames - 1);
+    }
+    for (const [key, frames] of this.passiveCooldowns) {
+      if (frames > 0) this.passiveCooldowns.set(key, frames - 1);
     }
     if (this.dashCooldown > 0) this.dashCooldown--;
     if (this.invulnFramesLeft > 0) this.invulnFramesLeft--;
@@ -121,6 +164,10 @@ export class FighterSim {
     if (this.perfectGuardFrames > 0) {
       this.perfectGuardFrames--;
       if (this.perfectGuardFrames === 0) this.isBlocking = true;
+    }
+    if (this.buffTicks > 0) {
+      this.buffTicks--;
+      if (this.buffTicks === 0) this.clearBuff();
     }
     if (!this.isBlocking && ['idle', 'walk', 'run'].includes(this.state)) {
       this.guardMeter = clamp(this.guardMeter + 0.35, 0, 100);
@@ -142,12 +189,14 @@ export class FighterSim {
     this.energy = Math.round(this.profile.stats.energy * 0.5);
     this.guardMeter = 100;
     this.cooldowns.clear();
+    this.passiveCooldowns.clear();
     this.body.x = x;
     this.body.y = y;
     this.body.vx = 0;
     this.body.vy = 0;
     this.facing = facing;
     this.attack = null;
+    this.clearBuff();
     this.isBlocking = false;
     this.guard = 'none';
     this.perfectGuardFrames = 0;

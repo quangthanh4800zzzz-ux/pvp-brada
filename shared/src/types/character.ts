@@ -57,6 +57,48 @@ export interface PassiveDef {
   coeff: number;
   cooldown: number;
   stacking: boolean;
+  effect?: PassiveEffect;
+}
+
+export interface PassiveEffect {
+  type: 'speedBoost';
+  durationFrames: number;
+  multiplier: number;
+}
+
+export type SkillKind = 'meleeStrike' | 'projectile' | 'buff';
+
+export interface ProjectileDef {
+  speed: number;
+  lifetime: number;
+  fx?: string;
+  gravity?: number;
+  width: number;
+  height: number;
+  offsetY: number;
+  damage: number;
+  knockbackX: number;
+  knockbackY: number;
+  hitstun: number;
+  blockstun: number;
+  hitstop: AttackDef['hitstop'];
+  guardHeight: AttackDef['guardHeight'];
+  canBeBlocked?: boolean;
+}
+
+export interface BuffDef {
+  durationFrames: number;
+  speedMultiplier?: number;
+  atkMultiplier?: number;
+}
+
+export interface SkillDef extends Omit<AttackDef, 'kind'> {
+  slot: 1 | 2 | 3 | 4 | 5;
+  kind: 'skill' | 'ultimate';
+  skillKind: SkillKind;
+  description: string;
+  projectile?: ProjectileDef;
+  buff?: BuffDef;
 }
 
 export interface CharacterStats {
@@ -76,6 +118,7 @@ export interface CharacterProfile {
   difficulty: 1 | 2 | 3 | 4 | 5;
   stats: CharacterStats;
   attacks: AttackDef[];
+  skills?: SkillDef[];
   passives: PassiveDef[];
   spriteSheet: string;
 }

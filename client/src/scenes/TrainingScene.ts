@@ -10,7 +10,7 @@ export class TrainingScene extends Phaser.Scene {
     super('Training');
   }
 
-  create(): void {
-    this.scene.start('Battle', { mode: 'training' });
+  create(data: { char1?: string; char2?: string }): void {
+    this.scene.start('Battle', { mode: 'training', char1: data.char1, char2: data.char2 });
   }
 }

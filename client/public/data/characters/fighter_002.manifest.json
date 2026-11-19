@@ -1,0 +1,390 @@
+{
+  "format": 1,
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "hitboxes": {
+    "fighter_002": {
+      "body": {
+        "x": 20,
+        "y": 14,
+        "width": 16,
+        "height": 32
+      },
+      "head": {
+        "x": 20,
+        "y": 10,
+        "width": 14,
+        "height": 10
+      },
+      "upper": {
+        "x": 18,
+        "y": 22,
+        "width": 20,
+        "height": 12
+      },
+      "lower": {
+        "x": 20,
+        "y": 25,
+        "width": 16,
+        "height": 20
+      }
+    }
+  },
+  "animations": {
+    "idle": {
+      "frameCount": 14,
+      "fps": 12,
+      "loop": true,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/idle.png",
+      "events": []
+    },
+    "walk": {
+      "frameCount": 14,
+      "fps": 16,
+      "loop": true,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/walk.png",
+      "events": []
+    },
+    "run": {
+      "frameCount": 12,
+      "fps": 18,
+      "loop": true,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/run.png",
+      "events": []
+    },
+    "jump": {
+      "frameCount": 8,
+      "fps": 14,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/jump.png",
+      "events": []
+    },
+    "fall": {
+      "frameCount": 8,
+      "fps": 14,
+      "loop": true,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/fall.png",
+      "events": []
+    },
+    "dash": {
+      "frameCount": 8,
+      "fps": 20,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/dash.png",
+      "events": []
+    },
+    "light": {
+      "frameCount": 15,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/light.png",
+      "events": [
+        {
+          "frame": 4,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 7,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 7,
+          "type": "playSound",
+          "params": {
+            "id": "hit_light"
+          }
+        }
+      ]
+    },
+    "medium": {
+      "frameCount": 27,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/medium.png",
+      "events": [
+        {
+          "frame": 8,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 13,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 13,
+          "type": "playSound",
+          "params": {
+            "id": "hit_medium"
+          }
+        }
+      ]
+    },
+    "heavy": {
+      "frameCount": 44,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/heavy.png",
+      "events": [
+        {
+          "frame": 15,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 21,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 21,
+          "type": "playSound",
+          "params": {
+            "id": "hit_heavy"
+          }
+        },
+        {
+          "frame": 21,
+          "type": "spawnParticle",
+          "params": {
+            "id": "fx_energyGlow"
+          }
+        }
+      ]
+    },
+    "airAttack": {
+      "frameCount": 21,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/airAttack.png",
+      "events": [
+        {
+          "frame": 5,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 9,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 9,
+          "type": "playSound",
+          "params": {
+            "id": "hit_air"
+          }
+        }
+      ]
+    },
+    "dashAttack": {
+      "frameCount": 27,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/dashAttack.png",
+      "events": [
+        {
+          "frame": 6,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 11,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 11,
+          "type": "playSound",
+          "params": {
+            "id": "hit_medium"
+          }
+        }
+      ]
+    },
+    "guard": {
+      "frameCount": 6,
+      "fps": 12,
+      "loop": true,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/guard.png",
+      "events": []
+    },
+    "hitReaction": {
+      "frameCount": 10,
+      "fps": 20,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/hitReaction.png",
+      "events": []
+    },
+    "knockdown": {
+      "frameCount": 8,
+      "fps": 12,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/knockdown.png",
+      "events": []
+    },
+    "getup": {
+      "frameCount": 10,
+      "fps": 14,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/getup.png",
+      "events": []
+    },
+    "victory": {
+      "frameCount": 14,
+      "fps": 14,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/victory.png",
+      "events": []
+    },
+    "defeat": {
+      "frameCount": 12,
+      "fps": 12,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/defeat.png",
+      "events": []
+    },
+    "voltDash": {
+      "frameCount": 18,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/voltDash.png",
+      "events": [
+        {
+          "frame": 4,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 10,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 4,
+          "type": "spawnParticle",
+          "params": {
+            "id": "fx_auraBurst"
+          }
+        }
+      ]
+    },
+    "arcBolt": {
+      "frameCount": 16,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/arcBolt.png",
+      "events": [
+        {
+          "frame": 9,
+          "type": "spawnParticle",
+          "params": {
+            "id": "fx_bolt"
+          }
+        }
+      ]
+    },
+    "thunderCut": {
+      "frameCount": 30,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "assets/characters/fighter_002/thunderCut.png",
+      "events": [
+        {
+          "frame": 9,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 17,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 9,
+          "type": "spawnParticle",
+          "params": {
+            "id": "fx_bolt"
+          }
+        },
+        {
+          "frame": 17,
+          "type": "cameraShake"
+        }
+      ]
+    }
+  },
+  "effects": {
+    "hitSpark": {
+      "frameCount": 5,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_hitSpark.png"
+    },
+    "slashTrail": {
+      "frameCount": 6,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_slashTrail.png"
+    },
+    "dust": {
+      "frameCount": 6,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_dust.png"
+    },
+    "energyGlow": {
+      "frameCount": 8,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_energyGlow.png"
+    },
+    "auraBurst": {
+      "frameCount": 10,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_auraBurst.png"
+    },
+    "energyBall": {
+      "frameCount": 6,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_energyBall.png"
+    },
+    "bolt": {
+      "frameCount": 6,
+      "fps": 30,
+      "loop": false,
+      "file": "assets/effects/fx_fighter_002_bolt.png"
+    }
+  }
+}

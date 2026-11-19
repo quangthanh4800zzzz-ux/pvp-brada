@@ -11,36 +11,51 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 | Map modifier zones (gravity/friction/movement/force) | ✅ | engine support + map_01 uses them; zone *visuals* partial |
 | Input system (19 actions, buffers, TTL, rebindable) | ✅ | keyboard; gamepad/touch ❌ |
 | Settings system with persistence | ✅ | localStorage adapter, conflict detection, export/import, reset |
-| Scene management | ✅ | Boot, MainMenu, Battle, Training, Settings all reachable & functional |
+| Scene management | ✅ | Boot, MainMenu, CharacterSelect, Battle, Training, Settings all reachable & functional |
 | Camera | 🟡 | follow mid-point, bounds, shake; dynamic zoom / dead zone / split rules ❌ |
-| Menu items with real function | 🟡 | VS Battle, Combat Lab, Settings functional; Online Arena + Character Collection are labeled "planned (see roadmap)" (rule 23.7) |
+| Menu items with real function | 🟡 | Character Select routes VS Battle / VS AI / Combat Lab with real pick flow; Online Arena + Character Collection labeled "planned (see roadmap)" (rule 23.7) |
 
 ## Phase 2 — Combat Engine ✅
 
 | Feature | State | Notes |
 |---|---|---|
-| Attacks with startup/active/recovery + per-frame hitboxes | ✅ | 5 attack types for fighter_001, full frame data in JSON |
+| Attacks with startup/active/recovery + per-frame hitboxes | ✅ | 5 attack types per fighter, full frame data in JSON |
 | Hit detection (facing, range, invuln, active-window-only) | ✅ | 18 unit tests |
 | Guard (high/low coverage, chip 10%, guard meter, guard break 45f) | ✅ | incl. facing-side bug fixed by tests |
 | Perfect guard (6f window) punishing attacker | ✅ | |
 | Combo engine (scaling 0.88^n floor 0.2, hitstun deterioration, knockback escalation, anti-infinite at 9 hits, 30f reset) | ✅ | |
 | Hitstop by attack weight (3/6/9/14f) | ✅ | |
-| Energy + cooldowns | ✅ | dash/attack cooldowns; skills themselves ❌ (see Phase 3) |
+| Energy + cooldowns | ✅ | dash/attack/skill/ultimate cooldowns |
 | Rounds (99s timer, KO, best-of, round reset) | ✅ | |
-| Cancel system (chain at active-end, dash-cancel, guard-cancel) | ✅ | cancel windows data-driven |
-| Throws, projectiles, parry, dodge/roll, wall bounce, ground bounce | ❌ | Phase 3+ |
-| Skills 1–4, ultimates, passives wired into sim | ❌ | passive declared in fighter_001.json but **not applied** by sim |
+| Cancel system (chain at active-end, dash-cancel, guard-cancel, skill-cancel) | ✅ | skill-cancel injects slots 1–4 or ult (5) from cancel window |
+| Throws, parry, dodge/roll, wall bounce, ground bounce | ❌ | Phase 4+ |
+| Skills (melee strike / projectile / buff) + ultimates | ✅ | SkillDef data-driven; buff/proj trigger exactly at startup→active transition |
+| Projectiles (sim + rendering + solid collision + lifetime) | ✅ | pooled sim array ≤ 24; per-tick collision vs hurtbox/solids; ProjectileLayer looping fx sprites; despawn poof |
+| Clean-hit passives applied by sim | ✅ | trigger 'cleanHit' → speed-boost buff w/ per-passive cooldown; sprite tint + energyGlow feedback |
+
+## Phase 3 — Character System & Character Select ✅
+
+| Feature | State | Notes |
+|---|---|---|
+| Data-driven roster (no character list hardcoded in engine) | ✅ | ROSTER_IDS in DataLoader, profiles from JSON |
+| fighter_002 "Volt Blade" (Assassin) | ✅ | distinct stats (SPD 125 / DEF 88), 3 skills, own palette + spiky-hair sprite set |
+| Skill validation (dup ids/slots, hitbox/projectile/buff invariants) | ✅ | DataLoader.validateProfiles |
+| Ultimate gate (energy cost 100, slot 5) | ✅ | |
+| Buff system (speed/attack multipliers, expiry, clear on round reset) | ✅ | FighterSim buff fields; sim applies at startup frame |
+| Passive system (trigger, cooldown, effect, stacking) | ✅ | momentum / flowState applied by sim |
+| Character Select scene | ✅ | roster grid + animated preview + stats bars + skill/passive info; P1→P2 pick flow; keyboard & mouse |
+| Bots use skills | ✅ | projectile at mid-range, melee strike when low HP / opportunistic, ultimate at full energy — all difficulty-seeded |
 
 ## Content
 
 | Item | State |
 |---|---|
-| Characters | 1/20 (fighter_001 "Rift Brawler") |
-| Skills | 0/6 per character set (basics + air + dash_attack only) |
+| Characters | 2/20 (fighter_001 "Rift Brawler" Rushdown, fighter_002 "Volt Blade" Assassin) |
+| Skills | 6: energyBall (projectile), risingCut (launcher), overdrive (ult buff) / voltDash (invuln strike), arcBolt (projectile), thunderCut (ult strike) |
 | Maps | 1/10 (map_01 Neon Rooftop — ground, 3 one-way platforms, 1 mover, 3 modifier zones) |
-| Animations | 17 anims / 258 frames / 4 effects for fighter_001 (procedural, temp assets by design) |
+| Animations | 20 anims × 2 chars / 642 frames; 7 effects per character (incl. auraBurst, energyBall, bolt) |
 | Audio | None (no AudioSystem; only settings skeleton) |
-| Bots / AI | Partial: FSM bot (approach/retreat/attack/guard/idle/jumpIn) with 5 seeded difficulties (beginner→expert); VS AI menu mode + difficulty setting; NO survival/boss/team AI yet |
+| Bots / AI | Partial: FSM bot with skills, 5 seeded difficulties; NO survival/boss/team AI yet |
 | Multiplayer | None (server scaffold only) |
 | Combat Lab depth | Partial: passive dummy + frame-data overlay; no sub-labs, no dummy options |
 | Save of stats/history | ❌ (settings save only) |
@@ -51,10 +66,14 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 - **Fixed 2025 (freeze round)**: three real bugs caused "pressing attack freezes the page": (1) Phaser keyboard event names are Phaser KeyMap names (`keydown-U`), not `event.code` (`keydown-KeyU`) — battle inputs were dead; BattleScene now wires window DOM listeners on `event.code`; (2) sprite-sheet manifest paths missing the `assets/` prefix → 404 textures → empty/missing animations; (3) playing a nonexistent animation throws mid-frame and kills Phaser's rAF chain → full-page freeze; BootScene skips missing textures/anims, FighterAnimator guards `play()` on `anims.exists`, and BattleScene create/update are wrapped in crash guards that render an on-screen RUNTIME ERROR panel instead of freezing.
 - Procedural sprites are explicitly temporary stand-ins (replaceable via manifest) — not claimed to be final art.
 - Bundle is ~1.25 MB minified (Phaser) — code-splitting deferred to Phase 10.
-- Passive 'momentum' is data-only: displayed by data layer, no gameplay effect in sim yet.
+- fighter_002 reuses fighter_001's body rig with different palette/hair/skill poses — silhouette work is Phase 4/10 polish.
+- Buff indicator is a temporary sprite tint (0xffdd88) + aura burst fx; HUD buff icon pending.
 - Frame-advantage display, dummy options, and physics sandbox in training: not implemented.
 - Solo control: in VS AI / Combat Lab P1 accepts BOTH WASD and arrow-key bindings (VS BATTLE keeps separate P1/P2 schemes).
 
 ## Tests run
 
-`npm run test` — 33 passing across 4 suites (loop 4, physics 7, combat 18, bot AI 4). Tests caught and forced fixes for 8 real engine bugs (physics tunneling, shallow-floor teleport, guard direction inversion, cooldowns never ticking, sim constructor stats reference, accumulator epsilon, spawn alignment, guard-break pushback drift).
+`npm run test` — 42 passing across 5 suites (loop 4, physics 7, combat 18, bot AI 4, skills 9). Tests caught and forced fixes for 10 real engine bugs (physics tunneling, shallow-floor teleport, guard direction inversion, cooldowns never ticking, sim constructor stats reference, accumulator epsilon, spawn alignment, guard-break pushback drift, passive trigger-string mismatch, grounded-settle in skill activation paths).
+
+`npm run typecheck` — clean across shared/client/server.
+`npm run build` — production build ✓.

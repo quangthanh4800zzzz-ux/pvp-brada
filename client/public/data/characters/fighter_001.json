@@ -209,10 +209,134 @@
       "id": "momentum",
       "name": "Momentum",
       "description": "Successful non-blocked hits grant +4 energy and slightly increase dash speed for 90 frames.",
-      "trigger": "clean hit",
+      "trigger": "cleanHit",
       "coeff": 4,
-      "cooldown": 0,
-      "stacking": false
+      "cooldown": 600,
+      "stacking": false,
+      "effect": {
+        "type": "speedBoost",
+        "durationFrames": 150,
+        "multiplier": 1.12
+      }
+    }
+  ],
+  "skills": [
+    {
+      "id": "energyBall",
+      "kind": "skill",
+      "skillKind": "projectile",
+      "slot": 1,
+      "name": "Energy Ball",
+      "description": "Nhem va ban mot qua cau nang luong cham, kiem soat khong gian trung tam gan.",
+      "damage": 50,
+      "energyCost": 18,
+      "cooldown": 210,
+      "frames": {
+        "startup": 6,
+        "active": 4,
+        "recovery": 6
+      },
+      "hitboxWindows": [],
+      "guardHeight": "mid",
+      "hitstun": 20,
+      "blockstun": 10,
+      "knockbackX": 150,
+      "knockbackY": 0,
+      "hitstop": "light",
+      "comboScaling": 0.8,
+      "canBeBlocked": true,
+      "airOk": true,
+      "requiresGrounded": false,
+      "animation": "energyBall",
+      "projectile": {
+        "speed": 300,
+        "lifetime": 90,
+        "gravity": 0,
+        "width": 10,
+        "height": 8,
+        "offsetY": -4,
+        "damage": 50,
+        "knockbackX": 170,
+        "knockbackY": 0,
+        "hitstun": 20,
+        "blockstun": 10,
+        "hitstop": "light",
+        "guardHeight": "mid",
+        "canBeBlocked": true
+      }
+    },
+    {
+      "id": "risingCut",
+      "kind": "skill",
+      "skillKind": "meleeStrike",
+      "slot": 2,
+      "name": "Rising Cut",
+      "description": "Uppercut launcher day doi thu len khong, co the cancel sang don tren khong.",
+      "damage": 80,
+      "energyCost": 15,
+      "cooldown": 260,
+      "frames": {
+        "startup": 8,
+        "active": 6,
+        "recovery": 12
+      },
+      "hitboxWindows": [
+        {
+          "startFrame": 8,
+          "endFrame": 13,
+          "box": {
+            "offsetX": 4,
+            "offsetY": -10,
+            "width": 20,
+            "height": 36
+          },
+          "damageMultiplier": 1
+        }
+      ],
+      "guardHeight": "mid",
+      "hitstun": 32,
+      "blockstun": 14,
+      "knockbackX": 130,
+      "knockbackY": -380,
+      "hitstop": "heavy",
+      "comboScaling": 0.82,
+      "canBeBlocked": true,
+      "airOk": false,
+      "requiresGrounded": true,
+      "forwardLunge": 120,
+      "animation": "risingCut"
+    },
+    {
+      "id": "overdrive",
+      "kind": "ultimate",
+      "skillKind": "buff",
+      "slot": 5,
+      "name": "Overdrive",
+      "description": "ULTIMATE: no aura tang +25% toc di chuyen va +20% tan cong trong 300 frame (5s).",
+      "damage": 0,
+      "energyCost": 100,
+      "cooldown": 600,
+      "frames": {
+        "startup": 5,
+        "active": 3,
+        "recovery": 12
+      },
+      "hitboxWindows": [],
+      "guardHeight": "mid",
+      "hitstun": 0,
+      "blockstun": 0,
+      "knockbackX": 0,
+      "knockbackY": 0,
+      "hitstop": "light",
+      "canBeBlocked": false,
+      "airOk": false,
+      "requiresGrounded": true,
+      "animation": "overdrive",
+      "buff": {
+        "durationFrames": 300,
+        "speedMultiplier": 1.25,
+        "atkMultiplier": 1.2
+      }
     }
   ]
 }

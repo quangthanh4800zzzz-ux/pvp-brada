@@ -4,6 +4,7 @@ import { BootScene } from './scenes/BootScene.js';
 import { MainMenuScene } from './scenes/MainMenuScene.js';
 import { BattleScene } from './scenes/BattleScene.js';
 import { TrainingScene } from './scenes/TrainingScene.js';
+import { CharacterSelectScene } from './scenes/CharacterSelectScene.js';
 import { SettingsScene } from './scenes/SettingsScene.js';
 
 const boot = document.getElementById('boot');
@@ -61,6 +62,7 @@ async function bootGame(mount: HTMLElement): Promise<void> {
   game.scene.add('MainMenu', MainMenuScene);
   game.scene.add('Battle', BattleScene);
   game.scene.add('Training', TrainingScene);
+  game.scene.add('CharacterSelect', CharacterSelectScene);
   game.scene.add('Settings', SettingsScene);
 }
 

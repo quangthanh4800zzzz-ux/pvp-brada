@@ -66,6 +66,15 @@ export class BootScene extends Phaser.Scene {
         frameRate: meta.fps,
         repeat: 0
       });
+      const loopKey = `fxp.${name}`;
+      if (!this.anims.exists(loopKey)) {
+        this.anims.create({
+          key: loopKey,
+          frames: this.anims.generateFrameNumbers(key, { start: 0, end: meta.frameCount - 1 }),
+          frameRate: meta.fps,
+          repeat: -1
+        });
+      }
     }
     if (missing.length > 0) {
       console.warn('[PRA] missing textures (animations skipped):', missing.join(', '));

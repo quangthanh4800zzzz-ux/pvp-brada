@@ -6,6 +6,7 @@ import { FixedTimestepLoop } from '../core/FixedTimestepLoop.js';
 import { BattleSim, type CombatEvent } from '../combat/BattleSim.js';
 import { FighterAnimator } from '../animation/FighterAnimator.js';
 import { FxLayer } from '../ui/FxLayer.js';
+import { ProjectileLayer } from '../ui/ProjectileLayer.js';
 import { BattleHud } from '../ui/BattleHud.js';
 import { MapRenderer } from './MapRenderer.js';
 import { InputSystem, ManualKeySource, BLOCK_DEFAULT } from '../systems/InputSystem.js';
@@ -22,12 +23,14 @@ export class BattleScene extends Phaser.Scene {
   private animators: FighterAnimator[] = [];
   private mapRenderer!: MapRenderer;
   private fx!: FxLayer;
+  private projectileLayer!: ProjectileLayer;
   private hud!: BattleHud;
   private inputSystem = new InputSystem();
   private source1!: ManualKeySource;
   private source2!: ManualKeySource;
   private training = false;
   private vsAi = false;
+  private charIds: string[] = ['fighter_001', 'fighter_001'];
   private bot: BotController | null = null;
   private fps = 60;
   private fpsCounter = 0;
@@ -55,15 +58,19 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  private createBattle(data: { mode?: string }): void {
+  private createBattle(data: { mode?: string; char1?: string; char2?: string }): void {
     this.training = data.mode === 'training';
     this.vsAi = data.mode === 'vsai';
     this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenu'));
     const loaded = this.registry.get(PRA_DATA_KEY) as LoadedData;
     const map = loaded.maps['map_01']!;
-    const profile = loaded.characters['fighter_001']!;
+    const roster = Object.keys(loaded.characters);
+    const char1Id = data.char1 && loaded.characters[data.char1] ? data.char1 : (roster[0] ?? 'fighter_001');
+    const char2Id = data.char2 && loaded.characters[data.char2] ? data.char2 : (roster[1] ?? char1Id);
+    const profile = loaded.characters[char1Id]!;
+    const profile2 = loaded.characters[char2Id]!;
 
-    this.sim = new BattleSim(map, [profile, profile]);
+    this.sim = new BattleSim(map, [profile, profile2]);
     if (this.training) this.sim.trainingMode = true;
 
     this.cameras.main.setBackgroundColor('#0b0e14');
@@ -71,17 +78,26 @@ export class BattleScene extends Phaser.Scene {
     this.mapRenderer.syncMovers(this.sim.physics);
 
     this.fx = new FxLayer(this);
+    this.projectileLayer = new ProjectileLayer(this);
     this.debugGfx = this.add.graphics().setDepth(900);
 
     const tints = [0xffffff, 0x9de1ff] as const;
     const starts = [map.spawn1.x, map.spawn2.x] as const;
+    this.charIds = [char1Id, char2Id];
     this.animators = this.sim.fighters.map((fighter, i) =>
-      new FighterAnimator(this, 'fighter_001', fighter, starts[i] as number, fighter.body.bottom, tints[i] as number)
+      new FighterAnimator(
+        this,
+        i === 0 ? char1Id : char2Id,
+        fighter,
+        starts[i] as number,
+        fighter.body.bottom,
+        tints[i] as number
+      )
     );
 
     this.hud = new BattleHud(
       this,
-      [`${profile.name} · P1`, this.training ? 'DUMMY' : `${profile.name} · P2`],
+      [`${profile.name} · P1`, this.training ? 'DUMMY' : `${profile2.name} · P2`],
       [0x2ec4b6, 0xc2547a]
     );
 
@@ -173,7 +189,8 @@ export class BattleScene extends Phaser.Scene {
       }
     }
 
-    this.sim.fighters.forEach((fighter, i) => this.animators[i]?.sync('fighter_001'));
+    this.sim.fighters.forEach((fighter, i) => this.animators[i]?.sync(this.charIds[i] ?? 'fighter_001'));
+    this.projectileLayer.sync(this.sim.projectiles);
     this.mapRenderer.syncMovers(this.sim.physics);
     this.cameraWork();
     this.hud.sync(this.sim, settings.data.graphics.showFps ? this.fps : -1);

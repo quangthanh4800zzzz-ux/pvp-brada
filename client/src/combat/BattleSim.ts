@@ -1,6 +1,6 @@
 import { clamp } from '@shared/math.js';
 import { COMBO, GUARD, ROUND } from '@shared/constants/game.js';
-import { aabbIntersects, type AABB, type AttackDef, type CharacterProfile, type Intent, type MapDefinition } from '@shared/types/index.js';
+import { aabbIntersects, type AABB, type AttackDef, type CharacterProfile, type Intent, type MapDefinition, type SkillDef } from '@shared/types/index.js';
 import { PhysicsWorld } from '../physics/PhysicsWorld.js';
 import { FIGHTER_HEIGHT, FIGHTER_WIDTH, FighterSim } from './FighterSim.js';
 
@@ -9,7 +9,27 @@ export type CombatEvent =
   | { type: 'ko'; fighter: number }
   | { type: 'roundEnd'; winner: number | null }
   | { type: 'combo'; attacker: number; hits: number; damage: number }
-  | { type: 'action'; fighter: number; action: string; attackId?: string };
+  | { type: 'action'; fighter: number; action: string; attackId?: string }
+  | { type: 'fx'; name: string; x: number; y: number; flip?: boolean };
+
+export interface Projectile {
+  id: number;
+  owner: 1 | 2;
+  skillId: string;
+  effect: AttackDef;
+  fx: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  vx: number;
+  vy: number;
+  gravity: number;
+  age: number;
+  lifetime: number;
+}
+
+const MAX_PROJECTILES = 24;
 
 export interface ComboTracker {
   hits: number;
@@ -42,6 +62,8 @@ export class BattleSim {
   trainingMode = false;
   trainingInfiniteHp = false;
   debugSpawns: HitSample[] = [];
+  projectiles: Projectile[] = [];
+  private nextProjectileId = 1;
 
   constructor(mapDefinition: MapDefinition, profiles: [CharacterProfile, CharacterProfile]) {
     this.mapDefinition = mapDefinition;
@@ -105,6 +127,8 @@ export class BattleSim {
 
     this.updateFacing();
     this.resolveMelee();
+    this.tickProjectiles();
+    this.tickSkillTriggers();
     this.tickCombos();
     return this.events;
   }
@@ -142,6 +166,7 @@ export class BattleSim {
 
   nextRound(): void {
     this.roundOver = false;
+    this.projectiles = [];
     this.winner = null;
     this.roundTime = ROUND.durationSeconds;
     this.fighters[0]?.resetForRound(this.mapDefinition.spawn1.x, this.mapDefinition.spawn1.y, 1);
@@ -194,6 +219,18 @@ export class BattleSim {
       const attack = fighter.basicAttack(intent.attackPressed, fighter.grounded);
       if (attack && this.canStartAttack(fighter, attack)) {
         this.startAttack(fighter, attack);
+        return;
+      }
+    }
+
+    const skillSlot = intent.ultimatePressed ? 5 : intent.skillPressed;
+    if (skillSlot) {
+      const skill = fighter.skillBySlot(skillSlot);
+      if (skill && this.canStartAttack(fighter, skill)) {
+        this.startAttack(fighter, skill);
+        if (skill.kind === 'ultimate') {
+          this.events.push({ type: 'action', fighter: fighter.side, action: 'ultimate', attackId: skill.id });
+        }
         return;
       }
     }
@@ -252,6 +289,16 @@ export class BattleSim {
     const { startup, active } = fighter.attack.frames;
     const cancelFrame = startup + active - 2;
     if (fighter.stateFrame < cancelFrame) return;
+
+    const skillSlot = intent.ultimatePressed ? 5 : intent.skillPressed;
+    if (skillSlot) {
+      const skill = fighter.skillBySlot(skillSlot);
+      if (skill && !fighter.onCooldown(skill.id) && skill.energyCost <= fighter.energy) {
+        this.startAttack(fighter, skill);
+        this.events.push({ type: 'action', fighter: fighter.side, action: 'skillCancel', attackId: skill.id });
+        return;
+      }
+    }
 
     if (intent.attackPressed) {
       const next = fighter.basicAttack(intent.attackPressed, fighter.grounded);
@@ -414,6 +461,7 @@ export class BattleSim {
       defender.body.grounded = false;
     }
     defender.setState('hitstun');
+    this.triggerPassives(attacker);
     if (defender.hp <= 0) {
       defender.setState('knockdown');
       this.events.push({ type: 'ko', fighter: defender.side });
@@ -427,9 +475,144 @@ export class BattleSim {
     const combo = this.comboFor(attacker.side);
     const scalingFactor = attack.comboScaling ?? COMBO.defaultScalingFactor;
     const scaling = Math.max(COMBO.minScaling, Math.pow(scalingFactor, combo.hits));
-    const atkFactor = attacker.profile.stats.atk / 100;
+    const atkFactor = attacker.atkFactor();
     const defFactor = 200 / (100 + defender.profile.stats.def);
     return attack.damage * multiplier * scaling * atkFactor * defFactor;
+  }
+
+  /** Clean-hit passives: e.g. momentum-style speed boosts after landing a non-blocked attack. */
+  private triggerPassives(attacker: FighterSim): void {
+    for (const passive of attacker.profile.passives) {
+      const effect = passive.effect;
+      if (!effect || passive.trigger !== 'cleanHit' || !attacker.passiveReady(passive.id)) continue;
+      attacker.applyBuff(passive.id, { durationFrames: effect.durationFrames, speedMultiplier: effect.multiplier });
+      attacker.passiveCooldowns.set(passive.id, passive.cooldown || 600);
+      this.events.push({ type: 'action', fighter: attacker.side, action: 'passive', attackId: passive.id });
+      this.events.push({
+        type: 'fx',
+        name: 'fx.energyGlow',
+        x: attacker.body.centerX,
+        y: attacker.body.bottom - 20,
+        flip: attacker.facing === -1
+      });
+    }
+  }
+
+  /** Skills: spawn projectiles / apply buffs exactly at the startup->active transition. */
+  private tickSkillTriggers(): void {
+    for (const attacker of this.fighters) {
+      if (attacker.state !== 'attack' || !attacker.attack) continue;
+      const skill = attacker.attack as SkillDef;
+      if (!skill.skillKind || attacker.stateFrame !== skill.frames.startup) continue;
+      if (skill.skillKind === 'projectile' && skill.projectile) {
+        if (this.projectiles.length < MAX_PROJECTILES) this.spawnProjectile(attacker, skill);
+      } else if (skill.skillKind === 'buff' && skill.buff) {
+        attacker.applyBuff(skill.id, skill.buff);
+        this.events.push({ type: 'action', fighter: attacker.side, action: 'buff', attackId: skill.id });
+        this.events.push({
+          type: 'fx',
+          name: skill.animation,
+          x: attacker.body.centerX,
+          y: attacker.body.bottom - 16,
+          flip: attacker.facing === -1
+        });
+      }
+    }
+  }
+
+  private spawnProjectile(owner: FighterSim, skill: SkillDef): void {
+    const def = skill.projectile;
+    if (!def) return;
+    const facing = owner.facing;
+    const effect: AttackDef = {
+      id: `${skill.id}_proj`,
+      kind: 'skill',
+      name: skill.name,
+      damage: def.damage,
+      energyCost: 0,
+      cooldown: 0,
+      frames: { startup: 0, active: 1, recovery: 0 },
+      hitboxWindows: [],
+      guardHeight: def.guardHeight,
+      hitstun: def.hitstun,
+      blockstun: def.blockstun,
+      knockbackX: def.knockbackX,
+      knockbackY: def.knockbackY,
+      hitstop: def.hitstop,
+      comboScaling: skill.comboScaling,
+      canBeBlocked: def.canBeBlocked ?? true,
+      airOk: true,
+      requiresGrounded: false,
+      animation: skill.animation
+    };
+    this.projectiles.push({
+      id: this.nextProjectileId++,
+      owner: owner.side,
+      skillId: skill.id,
+      effect,
+      fx: def.fx ?? skill.animation,
+      lifetime: def.lifetime,
+      x: facing === 1 ? owner.body.right + 2 : owner.body.left - def.width - 2,
+      y: owner.body.centerY + def.offsetY - def.height / 2,
+      width: def.width,
+      height: def.height,
+      vx: facing * def.speed,
+      vy: 0,
+      gravity: def.gravity ?? 0,
+      age: 0
+    });
+    this.events.push({
+      type: 'fx',
+      name: skill.animation,
+      x: owner.body.centerX + facing * 14,
+      y: owner.body.centerY - 4,
+      flip: facing === -1
+    });
+  }
+
+  private tickProjectiles(): void {
+    const dt = 1 / 60;
+    for (let i = this.projectiles.length - 1; i >= 0; i--) {
+      const projectile = this.projectiles[i] as Projectile;
+      projectile.age++;
+      projectile.vy += projectile.gravity * dt;
+      projectile.x += projectile.vx * dt;
+      projectile.y += projectile.vy * dt;
+
+      const box: AABB = { x: projectile.x, y: projectile.y, width: projectile.width, height: projectile.height };
+      this.debugSpawns.push({ fighter: projectile.owner, box, kind: 'hit' });
+
+      let dead = projectile.age >= projectile.lifetime;
+      const owner = this.getFighter(projectile.owner);
+      const defender = this.getFighter(projectile.owner === 1 ? 2 : 1);
+      if (!dead && defender.invulnFramesLeft === 0 && aabbIntersects(box, this.hurtbox(defender))) {
+        const result = this.applyHit(owner, defender, projectile.effect, 1);
+        this.hitstop = Math.max(this.hitstop, ROUND.hitstopFrames[projectile.effect.hitstop] ?? 4);
+        this.events.push({
+          type: 'hit',
+          attacker: projectile.owner,
+          defender: defender.side,
+          attackId: projectile.skillId,
+          damage: Math.round(result.damage),
+          blocked: result.blocked,
+          perfect: result.perfect,
+          hitstop: this.hitstop
+        });
+        dead = true;
+      }
+      if (!dead) {
+        for (const solid of this.physics.solids) {
+          if (aabbIntersects(box, solid)) {
+            dead = true;
+            break;
+          }
+        }
+      }
+      if (dead) {
+        this.events.push({ type: 'fx', name: 'fx.hitSpark', x: box.x + box.width / 2, y: box.y + box.height / 2 });
+        this.projectiles.splice(i, 1);
+      }
+    }
   }
 
   private punishAttacker(attacker: FighterSim, attack: AttackDef): void {

@@ -98,11 +98,18 @@ export class BotController {
       }
       default: {
         const canAct = me.state === 'idle' || me.state === 'walk' || me.state === 'run';
-        if (canAct && absDx <= reach && this.nextAttackIn <= 0 && this.rng() < this.profile.aggression) {
-          const roll = this.rng();
-          intent.attackPressed = roll < 0.5 ? 'light' : roll < 0.85 ? 'medium' : 'heavy';
-          this.nextAttackIn = Math.floor(18 + this.rng() * (60 * (1 - this.profile.aggression)));
-          this.state = 'attack';
+        if (canAct && this.nextAttackIn <= 0 && this.rng() < this.profile.aggression) {
+          if (this.pickSkill(me, opp, intent, absDx, reach)) {
+            this.nextAttackIn = Math.floor(24 + this.rng() * (60 * (1 - this.profile.aggression)));
+            this.state = 'attack';
+          } else if (absDx <= reach && this.rng() < this.profile.aggression) {
+            const roll = this.rng();
+            intent.attackPressed = roll < 0.5 ? 'light' : roll < 0.85 ? 'medium' : 'heavy';
+            this.nextAttackIn = Math.floor(18 + this.rng() * (60 * (1 - this.profile.aggression)));
+            this.state = 'attack';
+          } else if (absDx > reach * 1.4) {
+            this.state = 'approach';
+          }
         } else if (canAct && absDx > reach * 1.4) {
           this.state = 'approach';
         }
@@ -141,9 +148,43 @@ export class BotController {
     return intent;
   }
 
+  /** Returns true when a skill was chosen and stamped into the intent. */
+  private pickSkill(me: FighterSim, opp: FighterSim, intent: Intent, absDx: number, reach: number): boolean {
+    if (me.skills().length === 0) return false;
+    const ult = me.skillBySlot(5);
+    if (
+      ult &&
+      me.energy >= me.profile.stats.energy * 0.995 &&
+      absDx < reach + 60 &&
+      this.rng() < 0.35 + this.profile.aggression * 0.3
+    ) {
+      intent.ultimatePressed = true;
+      return true;
+    }
+    const proj = me
+      .skills()
+      .find((s) => s.skillKind === 'projectile' && !me.onCooldown(s.id) && me.energy >= s.energyCost);
+    if (proj && absDx > 120 && absDx < 400 && this.rng() < 0.4) {
+      intent.skillPressed = proj.slot;
+      return true;
+    }
+    const strike = me
+      .skills()
+      .find((s) => s.skillKind === 'meleeStrike' && !me.onCooldown(s.id) && me.energy >= s.energyCost);
+    if (strike && absDx <= reach + 36 && opp.hp <= opp.maxHp * 0.55 && this.rng() < 0.5) {
+      intent.skillPressed = strike.slot;
+      return true;
+    }
+    if (strike && absDx <= reach + 36 && this.rng() < 0.18) {
+      intent.skillPressed = strike.slot;
+      return true;
+    }
+    return false;
+  }
+
   static reach(fighter: FighterSim): number {
     let max = 52;
-    for (const attack of fighter.profile.attacks) {
+    for (const attack of [...fighter.profile.attacks, ...fighter.skills()]) {
       for (const window of attack.hitboxWindows) {
         max = Math.max(max, window.box.offsetX + window.box.width);
       }

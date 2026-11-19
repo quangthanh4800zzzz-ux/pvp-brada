@@ -45,13 +45,14 @@ export class FighterAnimator {
     this.sprite = scene.add.sprite(x, y, `${charId}.idle`, 0);
     this.sprite.setOrigin(0.5, 1);
     this.sprite.setTint(tint);
+    this.baseTint = tint;
   }
 
   sync(charId: string): void {
     const fighter = this.fighter;
     const animName =
       fighter.state === 'attack' && fighter.attack
-        ? (ATTACK_TO_ANIM[fighter.attack.id] ?? 'light')
+        ? fighter.attack.animation || ATTACK_TO_ANIM[fighter.attack.id] || 'light'
         : (STATE_TO_ANIM[fighter.state] ?? 'idle');
     const animKey = `${charId}.${animName}`;
 
@@ -69,5 +70,8 @@ export class FighterAnimator {
 
     this.sprite.setFlipX(fighter.facing === -1);
     this.sprite.setPosition(Math.round(fighter.body.centerX), fighter.body.bottom);
+    this.sprite.setTint(fighter.buffed ? 0xffdd88 : this.baseTint);
   }
+
+  private baseTint = 0xffffff;
 }
