@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "paths": {
+      "@pra/shared": ["../shared/src/index.ts"],
+      "@shared/*": ["../shared/src/*"],
+      "@client/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "../shared/src", "vite.config.ts"]
+}

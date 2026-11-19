@@ -1,0 +1,192 @@
+{
+  "id": "map_01",
+  "name": "Neon Rooftop",
+  "theme": "future city night, rain, neon signs, parallax skyline",
+  "bounds": {
+    "width": 960,
+    "height": 360
+  },
+  "spawn1": {
+    "x": 210,
+    "y": 278
+  },
+  "spawn2": {
+    "x": 750,
+    "y": 278
+  },
+  "solids": [
+    {
+      "x": 0,
+      "y": 312,
+      "width": 960,
+      "height": 48,
+      "visual": "ground"
+    },
+    {
+      "x": 200,
+      "y": 240,
+      "width": 120,
+      "height": 8,
+      "oneWay": true,
+      "visual": "platform"
+    },
+    {
+      "x": 640,
+      "y": 240,
+      "width": 120,
+      "height": 8,
+      "oneWay": true,
+      "visual": "platform"
+    },
+    {
+      "x": 430,
+      "y": 170,
+      "width": 110,
+      "height": 8,
+      "oneWay": true,
+      "visual": "platform"
+    }
+  ],
+  "movers": [
+    {
+      "id": "billboard_lift",
+      "x": 20,
+      "y": 180,
+      "width": 96,
+      "height": 8,
+      "axis": "y",
+      "distance": 30,
+      "periodMs": 4200,
+      "phase": 0.25
+    }
+  ],
+  "zones": [
+    {
+      "id": "puddle",
+      "region": {
+        "x": 300,
+        "y": 296,
+        "width": 140,
+        "height": 16
+      },
+      "frictionMultiplier": 0.35,
+      "movementMultiplier": 0.92,
+      "flags": [
+        "wet",
+        "splash"
+      ]
+    },
+    {
+      "id": "wind_gust",
+      "region": {
+        "x": 560,
+        "y": 80,
+        "width": 200,
+        "height": 200
+      },
+      "horizontalForce": -26,
+      "flags": [
+        "wind"
+      ]
+    },
+    {
+      "id": "sign_area",
+      "region": {
+        "x": 820,
+        "y": 160,
+        "width": 120,
+        "height": 60
+      },
+      "damageMultiplier": 1.08,
+      "flags": [
+        "neon"
+      ]
+    }
+  ],
+  "sky": [
+    [
+      10,
+      12,
+      34
+    ],
+    [
+      26,
+      20,
+      56
+    ],
+    [
+      48,
+      22,
+      78
+    ]
+  ],
+  "parallaxSeed": 7,
+  "visuals": {
+    "skyline": [
+      {
+        "scrollFactor": 0.15,
+        "color": 1120043,
+        "count": 10,
+        "heightMin": 120,
+        "heightMax": 230,
+        "windows": {
+          "color": 2243166,
+          "litChance": 0.14
+        }
+      },
+      {
+        "scrollFactor": 0.35,
+        "color": 1712960,
+        "count": 9,
+        "heightMin": 80,
+        "heightMax": 170,
+        "windows": {
+          "color": 16763450,
+          "litChance": 0.3
+        }
+      },
+      {
+        "scrollFactor": 0.6,
+        "color": 2305102,
+        "count": 8,
+        "heightMin": 50,
+        "heightMax": 120,
+        "windows": {
+          "color": 10347007,
+          "litChance": 0.38
+        }
+      }
+    ],
+    "neonSigns": [
+      {
+        "x": 870,
+        "y": 150,
+        "width": 52,
+        "height": 34,
+        "color": 16726650,
+        "blinkMs": 2600
+      },
+      {
+        "x": 60,
+        "y": 120,
+        "width": 40,
+        "height": 26,
+        "color": 3530936,
+        "blinkMs": 3400
+      },
+      {
+        "x": 470,
+        "y": 60,
+        "width": 46,
+        "height": 22,
+        "color": 10640383
+      }
+    ],
+    "rain": {
+      "enabled": true,
+      "density": 120,
+      "scrollFactor": 0.18
+    },
+    "vignette": true
+  }
+}
