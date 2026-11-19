@@ -26,21 +26,22 @@ export class MainMenuScene extends Phaser.Scene {
         }
       }
     }
-    this.add.rectangle(0, 0, 640, 90, 0x0b0e14).setOrigin(0).setAlpha(0.85);
+    this.add.rectangle(0, 0, 640, 110, 0x0b0e14).setOrigin(0).setAlpha(0.9);
     this.add.rectangle(0, 0, 640, 2, 0x00b8d9).setOrigin(0);
 
-    const title = this.add.text(32, 28, 'PIXEL RIFT ARENA', {
+    const title = this.add.text(320, 30, 'PIXEL RIFT ARENA', {
       fontFamily: 'monospace',
-      fontSize: '28px',
-      color: '#9de1ff'
-    });
+      fontSize: '34px',
+      color: '#9de1ff',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
     this.tweens.add({ targets: title, alpha: { from: 1, to: 0.75 }, duration: 900, yoyo: true, repeat: -1 });
-    this.add.text(32, 62, 'v0.1 — core build (Phase 1 + 2)', { fontFamily: 'monospace', fontSize: '10px', color: '#6a6f8a' });
+    this.add.text(320, 66, 'v0.1 — core build (Phase 1 + 2)', { fontFamily: 'monospace', fontSize: '11px', color: '#6a6f8a' }).setOrigin(0.5);
 
     MENU_ITEMS.forEach((item, index) => {
-      const text = this.add.text(64, 130 + index * 28, item.label, {
+      const text = this.add.text(220, 140 + index * 34, item.label, {
         fontFamily: 'monospace',
-        fontSize: '16px',
+        fontSize: '18px',
         color: '#c7cdf0'
       });
       text.setInteractive({ useHandCursor: true });
@@ -56,11 +57,13 @@ export class MainMenuScene extends Phaser.Scene {
       this.rows.push({ label: item.label, text });
     });
 
-    this.add.text(32, 330, 'P1: WASD+Space move · J guard · U/I/O attacks · Shift dash — P2: Arrows+Numpad', {
+    this.add.text(320, 300, '↑ ↓ / W S: chọn · ENTER: xác nhận', { fontFamily: 'monospace', fontSize: '10px', color: '#8a8fb0' }).setOrigin(0.5);
+    this.add.text(320, 322, 'P1: A/D·Space·J guard·U/I/O attack·Shift dash — P2: Arrows·Numpad', {
       fontFamily: 'monospace',
       fontSize: '9px',
       color: '#55597a'
-    });
+    }).setOrigin(0.5);
+    this.add.text(320, 344, 'ESC trong trận: về menu', { fontFamily: 'monospace', fontSize: '9px', color: '#55597a' }).setOrigin(0.5);
 
     this.input.keyboard?.on('keydown-UP', () => this.move(-1));
     this.input.keyboard?.on('keydown-W', () => this.move(-1));
@@ -84,7 +87,7 @@ export class MainMenuScene extends Phaser.Scene {
     const item = MENU_ITEMS[this.selected] ?? MENU_ITEMS[0];
     if (!item.sceneKey) {
       this.comingSoon?.destroy();
-      this.comingSoon = this.add.text(400, 130 + this.selected * 28, 'planned (see roadmap)', {
+      this.comingSoon = this.add.text(220 + 260, 140 + this.selected * 34, 'planned (see roadmap)', {
         fontFamily: 'monospace',
         fontSize: '9px',
         color: '#c25f5f'

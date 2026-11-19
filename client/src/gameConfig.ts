@@ -5,7 +5,6 @@ import { SettingsSystem } from './systems/SettingsSystem.js';
 export const settings = new SettingsSystem();
 
 export function createGame(parent: HTMLElement): Phaser.Game {
-  const scaleMode = Phaser.Scale.RESIZE;
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
@@ -14,7 +13,7 @@ export function createGame(parent: HTMLElement): Phaser.Game {
     pixelArt: settings.data.graphics.pixelScaling === 'nearest',
     roundPixels: true,
     scale: {
-      mode: scaleMode,
+      mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH
     },
     backgroundColor: '#0b0e14',

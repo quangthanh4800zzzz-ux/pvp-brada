@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { emptyIntent, type Intent } from '@shared/types/input.js';
+import { TICK_RATE } from '@shared/constants/game.js';
 import { PRA_DATA_KEY, type LoadedData } from '../core/DataLoader.js';
+import { FixedTimestepLoop } from '../core/FixedTimestepLoop.js';
 import { BattleSim, type CombatEvent } from '../combat/BattleSim.js';
 import { FighterAnimator } from '../animation/FighterAnimator.js';
 import { FxLayer } from '../ui/FxLayer.js';
@@ -30,6 +32,8 @@ export class BattleScene extends Phaser.Scene {
   private debugGfx!: Phaser.GameObjects.Graphics;
   private frameDataText!: Phaser.GameObjects.Text;
   private roundEndCooldown = 0;
+  private loop!: FixedTimestepLoop;
+  private crashed = false;
 
   constructor() {
     super('Battle');
@@ -73,7 +77,15 @@ export class BattleScene extends Phaser.Scene {
     this.source1 = new ManualKeySource();
     this.source2 = new ManualKeySource();
     this.wireKeyboard();
+    this.loop = new FixedTimestepLoop({ tickRate: TICK_RATE, update: () => this.stepSim() });
     this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenu'));
+  }
+
+  private stepSim(): void {
+    const intent1 = this.inputSystem.poll(settings.data.input.p1, this.source1.snapshot());
+    const intent2: Intent = this.training ? emptyIntent() : this.inputSystem.poll(settings.data.input.p2, this.source2.snapshot());
+    const events = this.sim.step([intent1, intent2]);
+    this.handleEvents(events);
   }
 
   private wireKeyboard(): void {
@@ -99,11 +111,14 @@ export class BattleScene extends Phaser.Scene {
       this.fpsTimer = 0;
     }
 
-    const intent1 = this.inputSystem.poll(settings.data.input.p1, this.source1.snapshot());
-    const intent2: Intent = this.training ? emptyIntent() : this.inputSystem.poll(settings.data.input.p2, this.source2.snapshot());
-
-    const events = this.sim.step([intent1, intent2]);
-    this.handleEvents(events);
+    if (!this.crashed) {
+      try {
+        this.loop.advance(delta);
+      } catch (error) {
+        this.crashed = true;
+        this.showFatalError(error as Error);
+      }
+    }
 
     this.sim.fighters.forEach((fighter, i) => this.animators[i]?.sync('fighter_001'));
     this.mapRenderer.syncMovers(this.sim.physics);
@@ -116,6 +131,21 @@ export class BattleScene extends Phaser.Scene {
       this.roundEndCooldown--;
       if (this.roundEndCooldown === 0) this.restartRound();
     }
+  }
+
+  private showFatalError(error: Error): void {
+    this.resultText?.destroy();
+    this.resultText = this.add
+      .text(320, 150, `RUNTIME ERROR\n${error.message}\n\nESC: menu`, {
+        fontFamily: 'monospace',
+        fontSize: '10px',
+        color: '#ff8a8a',
+        align: 'center',
+        wordWrap: { width: 500 }
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(1200);
   }
 
   private frameDataLine(training: boolean): string {

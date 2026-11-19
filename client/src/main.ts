@@ -29,6 +29,10 @@ window.addEventListener('pra-booted', hideBoot);
 window.addEventListener('error', (event) => {
   if (boot && boot.style.display !== 'none') showBootError(event.message);
 });
+window.addEventListener('unhandledrejection', (event) => {
+  const message = event.reason instanceof Error ? event.reason.message : String(event.reason);
+  if (boot && boot.style.display !== 'none') showBootError(message);
+});
 
 async function bootGame(mount: HTMLElement): Promise<void> {
   try {
