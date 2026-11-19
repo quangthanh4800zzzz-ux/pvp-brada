@@ -24,6 +24,25 @@ class Canvas {
   rect(x, y, w, h, color) {
     for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) this.px(xx, yy, color);
   }
+  isOpaque(x, y) {
+    if (x < 0 || y < 0 || x >= this.w || y >= this.h) return false;
+    return this.data[(y * this.w + x) * 4 + 3] > 0;
+  }
+  outline(color) {
+    const marks = [];
+    for (let y = 0; y < this.h; y++) {
+      for (let x = 0; x < this.w; x++) {
+        if (this.isOpaque(x, y)) continue;
+        let n = 0;
+        if (this.isOpaque(x - 1, y)) n++;
+        if (this.isOpaque(x + 1, y)) n++;
+        if (this.isOpaque(x, y - 1)) n++;
+        if (this.isOpaque(x, y + 1)) n++;
+        if (n >= 2) marks.push([x, y]);
+      }
+    }
+    for (const [x, y] of marks) this.px(x, y, color);
+  }
   limb(x0, y0, x1, y1, thickness, color, shade = 0x00000000) {
     const steps = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0)));
     for (let i = 0; i <= steps; i++) {
@@ -62,13 +81,21 @@ const PAL = {
   slash: 0xd6f3ff
 };
 
+const HAIR_LIGHT = 0x3a3548;
+
 function head(c, x, y, lean = 0) {
-  c.rect(x + Math.round(lean * 0.4), y, 9, 8, PAL.skin);
-  c.rect(x + Math.round(lean * 0.4), y, 9, 2, PAL.hair);
-  c.rect(x + Math.round(lean * 0.4), y + 1, 9, 1, PAL.hair);
-  c.px(x + Math.round(lean * 0.4) + 6, y + 4, PAL.eye);
-  c.px(x + Math.round(lean * 0.4) + 7, y + 4, PAL.eye);
-  c.px(x + Math.round(lean * 0.4) - 1, y + 2, PAL.outline);
+  const lx = x + Math.round(lean * 0.4);
+  c.rect(lx, y, 9, 8, PAL.skin);
+  c.rect(lx, y, 9, 2, PAL.hair);
+  c.rect(lx, y + 1, 9, 1, PAL.hair);
+  c.rect(lx, y + 2, 3, 1, PAL.hair);
+  c.px(lx + 1, y + 1, HAIR_LIGHT);
+  c.px(lx + 2, y + 1, HAIR_LIGHT);
+  c.px(lx + 6, y + 4, PAL.eye);
+  c.px(lx + 7, y + 4, PAL.eye);
+  c.px(lx + 7, y + 5, PAL.skinShade);
+  c.rect(lx + 2, y + 6, 5, 1, PAL.skinShade);
+  c.px(lx - 1, y + 2, PAL.outline);
 }
 
 /**
@@ -86,8 +113,13 @@ function drawFighter(c, pose) {
   c.limb(hipX + 2, hipY, pose.footFront.x, pose.footFront.y, 3, PAL.pants, PAL.outline);
   c.rect(pose.footFront.x - 2, Math.min(pose.footFront.y, FH - 3), 6, 2, PAL.boots);
   c.rect(pose.footBack.x - 2, Math.min(pose.footBack.y, FH - 3), 5, 2, PAL.pantsShade);
+  c.px(pose.footFront.x - 2, Math.min(pose.footFront.y, FH - 3), 0x6b5f4f);
+  c.px((hipX + pose.footFront.x) >> 1, (hipY + pose.footFront.y) >> 1, 0x2b2837);
 
   c.limb(hipX, hipY - 2, neckX, shoulderY + 4, 5, PAL.clothShade, PAL.outline);
+  c.rect(hipX - 3, hipY - 1, 7, 2, 0x201824);
+  c.px(hipX, hipY - 1, 0xd8b04a);
+  c.rect(neckX - 3, shoulderY + 3, 2, 4, PAL.clothLight);
 
   if (pose.aura) {
     const r = pose.aura;
@@ -171,6 +203,7 @@ function animationFrames({ length, poseAt, fps, loop }) {
     const canvas = new Canvas();
     const pose = poseAt(i, length);
     drawFighter(canvas, pose);
+    canvas.outline(PAL.outline);
     frames.push(canvas);
   }
   return { frames, fps, loop };

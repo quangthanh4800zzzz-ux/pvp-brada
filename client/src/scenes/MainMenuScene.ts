@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { runGuarded } from './crashGuard.js';
 
 const MENU_ITEMS = [
   { label: 'VS BATTLE', sceneKey: 'Battle', mode: 'battle' },
@@ -18,6 +19,13 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    runGuarded(this, () => this.buildMenu());
+  }
+
+  private buildMenu(): void {
+    this.selected = 0;
+    this.rows = [];
+    this.comingSoon = null;
     this.cameras.main.setBackgroundColor('#141024');
     for (let y = 0; y < 24; y++) {
       for (let x = 0; x < 40; x++) {

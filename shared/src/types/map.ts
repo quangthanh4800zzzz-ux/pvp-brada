@@ -31,6 +31,31 @@ export interface MapMoverDef {
   phase: number;
 }
 
+export interface SkylineLayer {
+  scrollFactor: number;
+  color: number;
+  count: number;
+  heightMin: number;
+  heightMax: number;
+  windows: { color: number; litChance: number };
+}
+
+export interface NeonSign {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color: number;
+  blinkMs?: number;
+}
+
+export interface MapVisuals {
+  skyline?: SkylineLayer[];
+  neonSigns?: NeonSign[];
+  rain?: { enabled: boolean; density?: number; scrollFactor?: number };
+  vignette?: boolean;
+}
+
 export interface MapDefinition {
   id: string;
   name: string;
@@ -43,4 +68,5 @@ export interface MapDefinition {
   zones: MapModifierZone[];
   sky: [number, number, number][];
   parallaxSeed: number;
+  visuals?: MapVisuals;
 }

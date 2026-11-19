@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { settings } from '../gameConfig.js';
+import { runGuarded } from './crashGuard.js';
 import { ACTIONS, type Action, type KeyBindings } from '@shared/types/input.js';
 
 const REBINDABLE: Action[] = [
@@ -29,6 +30,12 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   create(): void {
+    runGuarded(this, () => this.buildSettings());
+  }
+
+  private buildSettings(): void {
+    this.status = null;
+    this.rows = [];
     this.cameras.main.setBackgroundColor('#10122a');
     this.add.text(24, 20, 'SETTINGS', { fontFamily: 'monospace', fontSize: '20px', color: '#9de1ff' });
 
