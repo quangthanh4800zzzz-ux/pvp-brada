@@ -272,48 +272,62 @@ const ANIMATIONS = {
     }
   }),
   light: animationFrames({
-    length: 14,
-    fps: 30,
+    length: 15,
+    fps: 60,
     loop: false,
     poseAt: (i, n) => {
       const t = i / (n - 1);
       if (i < 4) return lerpPose(stand(), POSE_WINDUP, (i + 1) / 4);
       if (i < 7) return lerpPose(POSE_WINDUP, POSE_EXTEND, (i - 3) / 3);
       if (i < 9) return { ...POSE_EXTEND, smear: true, glow: i === 6 || i === 7 };
-      return lerpPose(POSE_EXTEND, stand(), (i - 8) / 5);
+      return lerpPose(POSE_EXTEND, stand(), (i - 6) / (n - 7));
     }
   }),
   medium: animationFrames({
-    length: 16,
-    fps: 30,
+    length: 27,
+    fps: 60,
     loop: false,
     poseAt: (i, n) => {
-      if (i < 7) return lerpPose(stand(), POSE_HOOKWIND, (i + 1) / 7);
-      if (i < 10) return lerpPose(POSE_HOOKWIND, POSE_HOOKHIT, (i - 6) / 4);
-      if (i < 12) return { ...POSE_HOOKHIT, glow: true };
-      return lerpPose(POSE_HOOKHIT, stand(), (i - 11) / 4);
+      if (i < 8) return lerpPose(stand(), POSE_HOOKWIND, (i + 1) / 8);
+      if (i < 13) return lerpPose(POSE_HOOKWIND, POSE_HOOKHIT, (i - 7) / 5);
+      if (i < 15) return { ...POSE_HOOKHIT, glow: true };
+      return lerpPose(POSE_HOOKHIT, stand(), (i - 12) / (n - 13));
     }
   }),
   heavy: animationFrames({
-    length: 18,
-    fps: 30,
+    length: 44,
+    fps: 60,
     loop: false,
-    poseAt: (i) => {
-      if (i < 12) return lerpPose(stand(), POSE_UPPERWIND, (i + 1) / 12);
-      if (i < 14) return lerpPose(POSE_UPPERWIND, POSE_UPPERHIT, (i - 11) / 3);
-      if (i < 16) return { ...POSE_UPPERHIT, glow: true, aura: true, auraPhase: i };
-      return lerpPose(POSE_UPPERHIT, stand(), (i - 15) / 2);
+    poseAt: (i, n) => {
+      if (i < 15) return lerpPose(stand(), POSE_UPPERWIND, (i + 1) / 15);
+      if (i < 21) return lerpPose(POSE_UPPERWIND, POSE_UPPERHIT, (i - 14) / 6);
+      if (i < 23) return { ...POSE_UPPERHIT, glow: true, aura: true, auraPhase: i };
+      return lerpPose(POSE_UPPERHIT, stand(), (i - 20) / (n - 21));
     }
   }),
   airAttack: animationFrames({
-    length: 14,
-    fps: 30,
+    length: 21,
+    fps: 60,
     loop: false,
     poseAt: (i) => {
-      if (i < 4) return lerpPose(i === 0 ? POSE_AIRKICK : POSE_AIRKICK, POSE_AIRKICK, 1);
-      if (i < 7) return swingPose(POSE_AIRKICK, 'handFront', 160 - i * 14, 15);
-      if (i < 9) return { ...swingPose(POSE_AIRKICK, 'handFront', 120, 17), smear: true, glow: true };
+      if (i < 5) return { ...POSE_AIRKICK };
+      if (i < 9) return swingPose(POSE_AIRKICK, 'handFront', 150 - (i - 5) * 10, 15 + (i - 5));
+      if (i < 11) return { ...swingPose(POSE_AIRKICK, 'handFront', 118, 18), smear: true, glow: true };
       return { ...POSE_AIRKICK };
+    }
+  }),
+  dashAttack: animationFrames({
+    length: 27,
+    fps: 60,
+    loop: false,
+    poseAt: (i, n) => {
+      if (i < 6) {
+        const t = i / 6;
+        return stand({ lean: 4, crouch: 0.5, footFront: { x: 33 - t * 4, y: 44 }, footBack: { x: 13, y: 45 }, handFront: { x: 24, y: 32 }, handBack: { x: 34 - t * 4, y: 32 }, smear: true, smearDir: -2 });
+      }
+      if (i < 11) return lerpPose(stand({ footFront: { x: 33, y: 44 }, footBack: { x: 13, y: 45 } }), POSE_EXTEND, (i - 5) / 5);
+      if (i < 13) return { ...POSE_EXTEND, smear: true, glow: true };
+      return lerpPose(POSE_EXTEND, stand({ footFront: { x: 30, y: 45 } }), (i - 10) / (n - 11));
     }
   }),
   guard: animationFrames({
@@ -460,20 +474,25 @@ const EVENTS_BY_ATTACK = {
     { frame: 7, type: 'playSound', params: { id: 'hit_light' } }
   ],
   medium: [
-    { frame: 7, type: 'activateHitbox' },
-    { frame: 10, type: 'deactivateHitbox' },
-    { frame: 10, type: 'playSound', params: { id: 'hit_medium' } }
+    { frame: 8, type: 'activateHitbox' },
+    { frame: 13, type: 'deactivateHitbox' },
+    { frame: 13, type: 'playSound', params: { id: 'hit_medium' } }
   ],
   heavy: [
-    { frame: 12, type: 'activateHitbox' },
-    { frame: 14, type: 'deactivateHitbox' },
-    { frame: 14, type: 'playSound', params: { id: 'hit_heavy' } },
-    { frame: 14, type: 'spawnParticle', params: { id: 'fx_energyGlow' } }
+    { frame: 15, type: 'activateHitbox' },
+    { frame: 21, type: 'deactivateHitbox' },
+    { frame: 21, type: 'playSound', params: { id: 'hit_heavy' } },
+    { frame: 21, type: 'spawnParticle', params: { id: 'fx_energyGlow' } }
   ],
   airAttack: [
-    { frame: 4, type: 'activateHitbox' },
-    { frame: 7, type: 'deactivateHitbox' },
-    { frame: 7, type: 'playSound', params: { id: 'hit_air' } }
+    { frame: 5, type: 'activateHitbox' },
+    { frame: 9, type: 'deactivateHitbox' },
+    { frame: 9, type: 'playSound', params: { id: 'hit_air' } }
+  ],
+  dashAttack: [
+    { frame: 6, type: 'activateHitbox' },
+    { frame: 11, type: 'deactivateHitbox' },
+    { frame: 11, type: 'playSound', params: { id: 'hit_medium' } }
   ]
 };
 
@@ -483,7 +502,8 @@ const ANIM_EVENTS = {
   light: EVENTS_BY_ATTACK.light || [],
   medium: EVENTS_BY_ATTACK.medium || [],
   heavy: EVENTS_BY_ATTACK.heavy || [],
-  airAttack: EVENTS_BY_ATTACK.airAttack || []
+  airAttack: EVENTS_BY_ATTACK.airAttack || [],
+  dashAttack: EVENTS_BY_ATTACK.dashAttack || []
 };
 
 const MANIFEST = {

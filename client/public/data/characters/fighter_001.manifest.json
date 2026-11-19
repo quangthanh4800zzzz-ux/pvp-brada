@@ -86,8 +86,8 @@
       "events": []
     },
     "light": {
-      "frameCount": 14,
-      "fps": 30,
+      "frameCount": 15,
+      "fps": 60,
       "loop": false,
       "frameWidth": 48,
       "frameHeight": 48,
@@ -111,23 +111,23 @@
       ]
     },
     "medium": {
-      "frameCount": 16,
-      "fps": 30,
+      "frameCount": 27,
+      "fps": 60,
       "loop": false,
       "frameWidth": 48,
       "frameHeight": 48,
       "file": "characters/fighter_001/medium.png",
       "events": [
         {
-          "frame": 7,
+          "frame": 8,
           "type": "activateHitbox"
         },
         {
-          "frame": 10,
+          "frame": 13,
           "type": "deactivateHitbox"
         },
         {
-          "frame": 10,
+          "frame": 13,
           "type": "playSound",
           "params": {
             "id": "hit_medium"
@@ -136,30 +136,30 @@
       ]
     },
     "heavy": {
-      "frameCount": 18,
-      "fps": 30,
+      "frameCount": 44,
+      "fps": 60,
       "loop": false,
       "frameWidth": 48,
       "frameHeight": 48,
       "file": "characters/fighter_001/heavy.png",
       "events": [
         {
-          "frame": 12,
+          "frame": 15,
           "type": "activateHitbox"
         },
         {
-          "frame": 14,
+          "frame": 21,
           "type": "deactivateHitbox"
         },
         {
-          "frame": 14,
+          "frame": 21,
           "type": "playSound",
           "params": {
             "id": "hit_heavy"
           }
         },
         {
-          "frame": 14,
+          "frame": 21,
           "type": "spawnParticle",
           "params": {
             "id": "fx_energyGlow"
@@ -168,26 +168,51 @@
       ]
     },
     "airAttack": {
-      "frameCount": 14,
-      "fps": 30,
+      "frameCount": 21,
+      "fps": 60,
       "loop": false,
       "frameWidth": 48,
       "frameHeight": 48,
       "file": "characters/fighter_001/airAttack.png",
       "events": [
         {
-          "frame": 4,
+          "frame": 5,
           "type": "activateHitbox"
         },
         {
-          "frame": 7,
+          "frame": 9,
           "type": "deactivateHitbox"
         },
         {
-          "frame": 7,
+          "frame": 9,
           "type": "playSound",
           "params": {
             "id": "hit_air"
+          }
+        }
+      ]
+    },
+    "dashAttack": {
+      "frameCount": 27,
+      "fps": 60,
+      "loop": false,
+      "frameWidth": 48,
+      "frameHeight": 48,
+      "file": "characters/fighter_001/dashAttack.png",
+      "events": [
+        {
+          "frame": 6,
+          "type": "activateHitbox"
+        },
+        {
+          "frame": 11,
+          "type": "deactivateHitbox"
+        },
+        {
+          "frame": 11,
+          "type": "playSound",
+          "params": {
+            "id": "hit_medium"
           }
         }
       ]

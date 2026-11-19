@@ -23,7 +23,7 @@ const ATTACK_TO_ANIM: Record<string, string> = {
   medium: 'medium',
   heavy: 'heavy',
   air_light: 'airAttack',
-  dash_attack: 'medium'
+  dash_attack: 'dashAttack'
 };
 
 /**

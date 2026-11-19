@@ -20,9 +20,23 @@
       "damage": 40,
       "energyCost": 0,
       "cooldown": 6,
-      "frames": { "startup": 4, "active": 3, "recovery": 8 },
+      "frames": {
+        "startup": 4,
+        "active": 3,
+        "recovery": 8
+      },
       "hitboxWindows": [
-        { "startFrame": 4, "endFrame": 6, "box": { "offsetX": 6, "offsetY": 16, "width": 20, "height": 8 }, "damageMultiplier": 1 }
+        {
+          "startFrame": 4,
+          "endFrame": 6,
+          "box": {
+            "offsetX": 6,
+            "offsetY": 16,
+            "width": 20,
+            "height": 8
+          },
+          "damageMultiplier": 1
+        }
       ],
       "guardHeight": "mid",
       "hitstun": 18,
@@ -43,9 +57,23 @@
       "damage": 70,
       "energyCost": 0,
       "cooldown": 18,
-      "frames": { "startup": 8, "active": 5, "recovery": 14 },
+      "frames": {
+        "startup": 8,
+        "active": 5,
+        "recovery": 14
+      },
       "hitboxWindows": [
-        { "startFrame": 8, "endFrame": 12, "box": { "offsetX": 6, "offsetY": 8, "width": 24, "height": 14 }, "damageMultiplier": 1 }
+        {
+          "startFrame": 8,
+          "endFrame": 12,
+          "box": {
+            "offsetX": 6,
+            "offsetY": 8,
+            "width": 24,
+            "height": 14
+          },
+          "damageMultiplier": 1
+        }
       ],
       "guardHeight": "mid",
       "hitstun": 26,
@@ -66,9 +94,23 @@
       "damage": 110,
       "energyCost": 8,
       "cooldown": 45,
-      "frames": { "startup": 15, "active": 6, "recovery": 23 },
+      "frames": {
+        "startup": 15,
+        "active": 6,
+        "recovery": 23
+      },
       "hitboxWindows": [
-        { "startFrame": 15, "endFrame": 20, "box": { "offsetX": 4, "offsetY": -6, "width": 22, "height": 30 }, "damageMultiplier": 1 }
+        {
+          "startFrame": 15,
+          "endFrame": 20,
+          "box": {
+            "offsetX": 4,
+            "offsetY": -6,
+            "width": 22,
+            "height": 30
+          },
+          "damageMultiplier": 1
+        }
       ],
       "guardHeight": "mid",
       "hitstun": 34,
@@ -80,7 +122,10 @@
       "canBeBlocked": true,
       "airOk": false,
       "requiresGrounded": true,
-      "armorFrames": [10, 14],
+      "armorFrames": [
+        10,
+        14
+      ],
       "animation": "heavy"
     },
     {
@@ -90,9 +135,23 @@
       "damage": 55,
       "energyCost": 0,
       "cooldown": 10,
-      "frames": { "startup": 5, "active": 4, "recovery": 12 },
+      "frames": {
+        "startup": 5,
+        "active": 4,
+        "recovery": 12
+      },
       "hitboxWindows": [
-        { "startFrame": 5, "endFrame": 8, "box": { "offsetX": 5, "offsetY": 10, "width": 22, "height": 16 }, "damageMultiplier": 1 }
+        {
+          "startFrame": 5,
+          "endFrame": 8,
+          "box": {
+            "offsetX": 5,
+            "offsetY": 10,
+            "width": 22,
+            "height": 16
+          },
+          "damageMultiplier": 1
+        }
       ],
       "guardHeight": "high",
       "hitstun": 24,
@@ -113,9 +172,23 @@
       "damage": 60,
       "energyCost": 0,
       "cooldown": 30,
-      "frames": { "startup": 6, "active": 5, "recovery": 16 },
+      "frames": {
+        "startup": 6,
+        "active": 5,
+        "recovery": 16
+      },
       "hitboxWindows": [
-        { "startFrame": 6, "endFrame": 10, "box": { "offsetX": 8, "offsetY": 10, "width": 22, "height": 16 }, "damageMultiplier": 1 }
+        {
+          "startFrame": 6,
+          "endFrame": 10,
+          "box": {
+            "offsetX": 8,
+            "offsetY": 10,
+            "width": 22,
+            "height": 16
+          },
+          "damageMultiplier": 1
+        }
       ],
       "guardHeight": "low",
       "hitstun": 22,
@@ -128,7 +201,7 @@
       "airOk": false,
       "requiresGrounded": false,
       "forwardLunge": 260,
-      "animation": "medium"
+      "animation": "dashAttack"
     }
   ],
   "passives": [
