@@ -36,10 +36,15 @@ export class BootScene extends Phaser.Scene {
   private createAnimations(): void {
     const data = getBootData();
     const effects = data.manifests['fighter_001'] ? data.manifests['fighter_001'].effects : {};
+    const missing: string[] = [];
     for (const [charId, manifest] of Object.entries(data.manifests)) {
       for (const [animName, meta] of Object.entries(manifest.animations)) {
         const key = `${charId}.${animName}`;
         if (this.anims.exists(key)) continue;
+        if (!this.textures.exists(key)) {
+          missing.push(key);
+          continue;
+        }
         this.anims.create({
           key,
           frames: this.anims.generateFrameNumbers(key, { start: 0, end: meta.frameCount - 1 }),
@@ -51,12 +56,20 @@ export class BootScene extends Phaser.Scene {
     for (const [name, meta] of Object.entries(effects)) {
       const key = `fx.${name}`;
       if (this.anims.exists(key)) continue;
+      if (!this.textures.exists(key)) {
+        missing.push(key);
+        continue;
+      }
       this.anims.create({
         key,
         frames: this.anims.generateFrameNumbers(key, { start: 0, end: meta.frameCount - 1 }),
         frameRate: meta.fps,
         repeat: 0
       });
+    }
+    if (missing.length > 0) {
+      console.warn('[PRA] missing textures (animations skipped):', missing.join(', '));
+      window.dispatchEvent(new CustomEvent('pra-asset-warning', { detail: missing }));
     }
   }
 }

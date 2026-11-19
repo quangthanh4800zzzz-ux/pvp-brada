@@ -25,6 +25,17 @@ const hideBoot = (): void => {
   window.removeEventListener('pra-booted', hideBoot);
 };
 
+let assetWarn: HTMLElement | null = null;
+window.addEventListener('pra-asset-warning', (event) => {
+  const detail = (event as CustomEvent<string[]>).detail ?? [];
+  if (detail.length === 0) return;
+  if (!assetWarn) {
+    assetWarn = document.createElement('pre');
+    assetWarn.style.cssText = 'position:fixed;bottom:8px;left:8px;margin:0;padding:6px 10px;background:#3a0d0d;color:#ffb0b0;font:12px monospace;white-space:pre-wrap;z-index:999;max-width:60vw;border:1px solid #ff8a8a;';
+    document.body.appendChild(assetWarn);
+  }
+  assetWarn.textContent = `MISSING ASSETS (${detail.length}): ${detail.slice(0, 6).join(', ')}${detail.length > 6 ? ' ...' : ''}`;
+});
 window.addEventListener('pra-booted', hideBoot);
 window.addEventListener('error', (event) => {
   if (boot && boot.style.display !== 'none') showBootError(event.message);

@@ -533,7 +533,7 @@ for (const [name, { frames, fps, loop }] of Object.entries(ANIMATIONS)) {
     loop,
     frameWidth: FW,
     frameHeight: FH,
-    file: `characters/fighter_001/${name}.png`,
+    file: `assets/characters/fighter_001/${name}.png`,
     events: ANIM_EVENTS[name] ?? []
   };
 }
@@ -541,7 +541,7 @@ for (const [name, { frames, fps, loop }] of Object.entries(ANIMATIONS)) {
 const fxDir = join(OUT_ROOT, 'effects');
 mkdirSync(fxDir, { recursive: true });
 for (const [name, frames] of Object.entries(EFFECTS)) {
-  const file = `effects/fx_${name}.png`;
+  const file = `assets/effects/fx_${name}.png`;
   writeSheet(`fx_${name}`, frames, fxDir);
   MANIFEST.effects[name] = { frameCount: frames.length, fps: 30, loop: false, file };
 }

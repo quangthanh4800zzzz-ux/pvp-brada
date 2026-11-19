@@ -55,14 +55,16 @@ export class FighterAnimator {
         : (STATE_TO_ANIM[fighter.state] ?? 'idle');
     const animKey = `${charId}.${animName}`;
 
-    if (this.sprite.anims.currentAnim?.key !== animKey) {
+    if (this.sprite.anims.currentAnim?.key !== animKey && this.sprite.scene.anims.exists(animKey)) {
       this.sprite.anims.play(animKey, true);
     }
 
     if (fighter.state === 'attack' && fighter.attack) {
       const total = this.sprite.anims.getTotalFrames();
-      const progress = Math.min(fighter.stateFrame, total - 1) / Math.max(1, total - 1);
-      this.sprite.anims.setProgress(progress);
+      if (total > 0) {
+        const progress = Math.min(fighter.stateFrame, total - 1) / Math.max(1, total - 1);
+        this.sprite.anims.setProgress(progress);
+      }
     }
 
     this.sprite.setFlipX(fighter.facing === -1);

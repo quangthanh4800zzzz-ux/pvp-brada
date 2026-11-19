@@ -38,7 +38,7 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 | Characters | 1/20 (fighter_001 "Rift Brawler") |
 | Skills | 0/6 per character set (basics + air + dash_attack only) |
 | Maps | 1/10 (map_01 Neon Rooftop — ground, 3 one-way platforms, 1 mover, 3 modifier zones) |
-| Animations | 16 anims / 186 frames / 4 effects for fighter_001 (procedural, temp assets by design) |
+| Animations | 17 anims / 258 frames / 4 effects for fighter_001 (procedural, temp assets by design) |
 | Audio | None (no AudioSystem; only settings skeleton) |
 | Bots / AI | None |
 | Multiplayer | None (server scaffold only) |
@@ -47,7 +47,8 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 
 ## Known issues / caveats
 
-- **No browser playtest yet** — sandbox has no headless browser; all verification is via vitest + `vite build`. First real manual playtest pending.
+- **No browser playtest yet** — sandbox has no headless browser; verification is via vitest + `vite build` + a disposable real-Phaser headless harness (since removed) that reproduced and verified the fixes for the freeze bugs below. First real manual playtest pending.
+- **Fixed 2025 (freeze round)**: three real bugs caused "pressing attack freezes the page": (1) Phaser keyboard event names are Phaser KeyMap names (`keydown-U`), not `event.code` (`keydown-KeyU`) — battle inputs were dead; BattleScene now wires window DOM listeners on `event.code`; (2) sprite-sheet manifest paths missing the `assets/` prefix → 404 textures → empty/missing animations; (3) playing a nonexistent animation throws mid-frame and kills Phaser's rAF chain → full-page freeze; BootScene skips missing textures/anims, FighterAnimator guards `play()` on `anims.exists`, and BattleScene create/update are wrapped in crash guards that render an on-screen RUNTIME ERROR panel instead of freezing.
 - Procedural sprites are explicitly temporary stand-ins (replaceable via manifest) — not claimed to be final art.
 - Bundle is ~1.25 MB minified (Phaser) — code-splitting deferred to Phase 10.
 - Passive 'momentum' is data-only: displayed by data layer, no gameplay effect in sim yet.

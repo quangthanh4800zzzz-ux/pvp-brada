@@ -8,7 +8,7 @@ import { FighterAnimator } from '../animation/FighterAnimator.js';
 import { FxLayer } from '../ui/FxLayer.js';
 import { BattleHud } from '../ui/BattleHud.js';
 import { MapRenderer } from './MapRenderer.js';
-import { InputSystem, ManualKeySource } from '../systems/InputSystem.js';
+import { InputSystem, ManualKeySource, BLOCK_DEFAULT } from '../systems/InputSystem.js';
 import { settings } from '../gameConfig.js';
 
 /**
@@ -32,15 +32,28 @@ export class BattleScene extends Phaser.Scene {
   private debugGfx!: Phaser.GameObjects.Graphics;
   private frameDataText!: Phaser.GameObjects.Text;
   private roundEndCooldown = 0;
+  private readonly codeToSource = new Map<string, ManualKeySource>();
   private loop!: FixedTimestepLoop;
   private crashed = false;
+  private readonly keyDown = (event: KeyboardEvent): void => this.handleKey(event, true);
+  private readonly keyUp = (event: KeyboardEvent): void => this.handleKey(event, false);
 
   constructor() {
     super('Battle');
   }
 
   create(data: { mode?: string }): void {
-    this.training = data?.mode === 'training';
+    try {
+      this.createBattle(data ?? {});
+    } catch (error) {
+      this.crashed = true;
+      this.showFatalError(error as Error);
+    }
+  }
+
+  private createBattle(data: { mode?: string }): void {
+    this.training = data.mode === 'training';
+    this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenu'));
     const loaded = this.registry.get(PRA_DATA_KEY) as LoadedData;
     const map = loaded.maps['map_01']!;
     const profile = loaded.characters['fighter_001']!;
@@ -78,7 +91,6 @@ export class BattleScene extends Phaser.Scene {
     this.source2 = new ManualKeySource();
     this.wireKeyboard();
     this.loop = new FixedTimestepLoop({ tickRate: TICK_RATE, update: () => this.stepSim() });
-    this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenu'));
   }
 
   private stepSim(): void {
@@ -86,6 +98,15 @@ export class BattleScene extends Phaser.Scene {
     const intent2: Intent = this.training ? emptyIntent() : this.inputSystem.poll(settings.data.input.p2, this.source2.snapshot());
     const events = this.sim.step([intent1, intent2]);
     this.handleEvents(events);
+  }
+
+  private handleKey(event: KeyboardEvent, down: boolean): void {
+    if (down && BLOCK_DEFAULT.has(event.code)) event.preventDefault();
+    const actionSource = this.codeToSource.get(event.code);
+    if (actionSource) {
+      if (down) actionSource.press(event.code);
+      else actionSource.release(event.code);
+    }
   }
 
   private wireKeyboard(): void {
@@ -96,13 +117,31 @@ export class BattleScene extends Phaser.Scene {
     for (const [source, bindings] of players) {
       for (const code of Object.values(bindings)) {
         if (!code || code === 'Escape' || code === 'Tab') continue;
-        this.input.keyboard?.on(`keydown-${code}`, () => source.press(code));
-        this.input.keyboard?.on(`keyup-${code}`, () => source.release(code));
+        this.codeToSource.set(code, source);
       }
     }
+    window.addEventListener('keydown', this.keyDown);
+    window.addEventListener('keyup', this.keyUp);
+    this.events.once('shutdown', () => this.unwireKeyboard());
+    this.events.once('destroy', () => this.unwireKeyboard());
+  }
+
+  private unwireKeyboard(): void {
+    window.removeEventListener('keydown', this.keyDown);
+    window.removeEventListener('keyup', this.keyUp);
   }
 
   update(_time: number, delta: number): void {
+    if (this.crashed) return;
+    try {
+      this.updateBattle(_time, delta);
+    } catch (error) {
+      this.crashed = true;
+      this.showFatalError(error as Error);
+    }
+  }
+
+  private updateBattle(_time: number, delta: number): void {
     this.fpsTimer += delta;
     this.fpsCounter++;
     if (this.fpsTimer >= 500) {
