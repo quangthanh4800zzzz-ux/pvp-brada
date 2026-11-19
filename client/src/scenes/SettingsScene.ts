@@ -79,6 +79,13 @@ export class SettingsScene extends Phaser.Scene {
       this.rebindRow(x, y, action);
     });
 
+    const diff = settings.data.ai;
+    this.toggle(24, this.panelY + 134, `Bot difficulty: ${diff.difficulty}`, () => {
+      const order = ['beginner', 'easy', 'normal', 'hard', 'expert'] as const;
+      const next = order[(order.indexOf(diff.difficulty) + 1) % order.length] as typeof diff.difficulty;
+      diff.difficulty = next;
+    });
+
     this.add.text(24, 322, 'R: reset defaults · ESC: back to menu', {
       fontFamily: 'monospace',
       fontSize: '10px',
@@ -93,6 +100,7 @@ export class SettingsScene extends Phaser.Scene {
       settings.resetSection('input');
       settings.resetSection('graphics');
       settings.resetSection('audio');
+      settings.resetSection('ai');
       this.scene.restart();
     });
   }

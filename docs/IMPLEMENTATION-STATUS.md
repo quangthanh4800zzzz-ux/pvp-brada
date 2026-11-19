@@ -40,7 +40,7 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 | Maps | 1/10 (map_01 Neon Rooftop — ground, 3 one-way platforms, 1 mover, 3 modifier zones) |
 | Animations | 17 anims / 258 frames / 4 effects for fighter_001 (procedural, temp assets by design) |
 | Audio | None (no AudioSystem; only settings skeleton) |
-| Bots / AI | None |
+| Bots / AI | Partial: FSM bot (approach/retreat/attack/guard/idle/jumpIn) with 5 seeded difficulties (beginner→expert); VS AI menu mode + difficulty setting; NO survival/boss/team AI yet |
 | Multiplayer | None (server scaffold only) |
 | Combat Lab depth | Partial: passive dummy + frame-data overlay; no sub-labs, no dummy options |
 | Save of stats/history | ❌ (settings save only) |
@@ -53,7 +53,8 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 - Bundle is ~1.25 MB minified (Phaser) — code-splitting deferred to Phase 10.
 - Passive 'momentum' is data-only: displayed by data layer, no gameplay effect in sim yet.
 - Frame-advantage display, dummy options, and physics sandbox in training: not implemented.
+- Solo control: in VS AI / Combat Lab P1 accepts BOTH WASD and arrow-key bindings (VS BATTLE keeps separate P1/P2 schemes).
 
 ## Tests run
 
-`npm run test` — 29 passing across 3 suites (loop 4, physics 7, combat 18). Tests caught and forced fixes for 8 real engine bugs (physics tunneling, shallow-floor teleport, guard direction inversion, cooldowns never ticking, sim constructor stats reference, accumulator epsilon, spawn alignment, guard-break pushback drift).
+`npm run test` — 33 passing across 4 suites (loop 4, physics 7, combat 18, bot AI 4). Tests caught and forced fixes for 8 real engine bugs (physics tunneling, shallow-floor teleport, guard direction inversion, cooldowns never ticking, sim constructor stats reference, accumulator epsilon, spawn alignment, guard-break pushback drift).

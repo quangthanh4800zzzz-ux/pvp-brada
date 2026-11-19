@@ -3,6 +3,7 @@ import { runGuarded } from './crashGuard.js';
 
 const MENU_ITEMS = [
   { label: 'VS BATTLE', sceneKey: 'Battle', mode: 'battle' },
+  { label: 'VS AI', sceneKey: 'Battle', mode: 'vsai' },
   { label: 'COMBAT LAB', sceneKey: 'Training', mode: 'training' },
   { label: 'SETTINGS', sceneKey: 'Settings', mode: '' },
   { label: 'ONLINE ARENA', sceneKey: '', mode: '' },
@@ -71,7 +72,7 @@ export class MainMenuScene extends Phaser.Scene {
       fontSize: '9px',
       color: '#55597a'
     }).setOrigin(0.5);
-    this.add.text(320, 344, 'ESC trong trận: về menu', { fontFamily: 'monospace', fontSize: '9px', color: '#55597a' }).setOrigin(0.5);
+    this.add.text(320, 344, 'Động một mình (VS AI/COMBAT LAB): dùng cả WASD và Arrows · ESC trong trận: về menu', { fontFamily: 'monospace', fontSize: '9px', color: '#55597a' }).setOrigin(0.5);
 
     this.input.keyboard?.on('keydown-UP', () => this.move(-1));
     this.input.keyboard?.on('keydown-W', () => this.move(-1));

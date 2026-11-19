@@ -9,11 +9,13 @@ import { FxLayer } from '../ui/FxLayer.js';
 import { BattleHud } from '../ui/BattleHud.js';
 import { MapRenderer } from './MapRenderer.js';
 import { InputSystem, ManualKeySource, BLOCK_DEFAULT } from '../systems/InputSystem.js';
+import { BotController } from '../ai/BotController.js';
 import { settings } from '../gameConfig.js';
 
 /**
  * Local battle scene: drives BattleSim (60Hz fixed timestep) from Phaser.
- * P1 + P2 both keyboard. In training mode P2 is a passive dummy.
+ * Modes: battle (P1+P2 keyboard), vsai (P1 keyboard + bot), training (dummy).
+ * In solo modes P1 accepts BOTH its own bindings and P2's (WASD + arrows).
  */
 export class BattleScene extends Phaser.Scene {
   private sim!: BattleSim;
@@ -25,6 +27,8 @@ export class BattleScene extends Phaser.Scene {
   private source1!: ManualKeySource;
   private source2!: ManualKeySource;
   private training = false;
+  private vsAi = false;
+  private bot: BotController | null = null;
   private fps = 60;
   private fpsCounter = 0;
   private fpsTimer = 0;
@@ -53,6 +57,7 @@ export class BattleScene extends Phaser.Scene {
 
   private createBattle(data: { mode?: string }): void {
     this.training = data.mode === 'training';
+    this.vsAi = data.mode === 'vsai';
     this.input.keyboard?.on('keydown-ESC', () => this.scene.start('MainMenu'));
     const loaded = this.registry.get(PRA_DATA_KEY) as LoadedData;
     const map = loaded.maps['map_01']!;
@@ -89,13 +94,22 @@ export class BattleScene extends Phaser.Scene {
 
     this.source1 = new ManualKeySource();
     this.source2 = new ManualKeySource();
+    if (this.vsAi) this.bot = new BotController(this.sim, 1, settings.data.ai.difficulty);
     this.wireKeyboard();
     this.loop = new FixedTimestepLoop({ tickRate: TICK_RATE, update: () => this.stepSim() });
   }
 
+  private get soloControl(): boolean {
+    return this.training || this.vsAi;
+  }
+
   private stepSim(): void {
     const intent1 = this.inputSystem.poll(settings.data.input.p1, this.source1.snapshot());
-    const intent2: Intent = this.training ? emptyIntent() : this.inputSystem.poll(settings.data.input.p2, this.source2.snapshot());
+    const intent2: Intent = this.training
+      ? emptyIntent()
+      : this.vsAi && this.bot
+        ? this.bot.think()
+        : this.inputSystem.poll(settings.data.input.p2, this.source2.snapshot());
     const events = this.sim.step([intent1, intent2]);
     this.handleEvents(events);
   }
@@ -112,7 +126,7 @@ export class BattleScene extends Phaser.Scene {
   private wireKeyboard(): void {
     const players: [ManualKeySource, Record<string, string>][] = [
       [this.source1, settings.data.input.p1],
-      [this.source2, settings.data.input.p2]
+      [this.soloControl ? this.source1 : this.source2, settings.data.input.p2]
     ];
     for (const [source, bindings] of players) {
       for (const code of Object.values(bindings)) {

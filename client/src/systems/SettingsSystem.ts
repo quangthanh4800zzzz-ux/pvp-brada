@@ -10,6 +10,10 @@ export interface GraphicsSettings {
   showHitboxes: boolean;
 }
 
+export interface AiSettings {
+  difficulty: 'beginner' | 'easy' | 'normal' | 'hard' | 'expert';
+}
+
 export interface AudioSettings {
   master: number;
   music: number;
@@ -31,6 +35,7 @@ export interface SettingsData {
   graphics: GraphicsSettings;
   audio: AudioSettings;
   input: InputSettings;
+  ai: AiSettings;
 }
 
 export const P1_DEFAULT: KeyBindings = {
@@ -89,6 +94,7 @@ export const DEFAULT_SETTINGS: SettingsData = {
     showHitboxes: false
   },
   audio: { master: 0.8, music: 0.7, sfx: 0.9, ui: 0.8 },
+  ai: { difficulty: 'normal' },
   input: {
     p1: { ...P1_DEFAULT },
     p2: { ...P2_DEFAULT },
@@ -200,6 +206,13 @@ export class SettingsSystem {
       const buffer = Number(partial.input.inputBufferFrames);
       if (Number.isFinite(buffer)) result.input.inputBufferFrames = Math.min(20, Math.max(0, Math.trunc(buffer)));
     }
+    if (partial.ai) {
+      if (!(['beginner', 'easy', 'normal', 'hard', 'expert'] as const).includes(partial.ai.difficulty)) {
+        result.ai = structuredClone(DEFAULT_SETTINGS.ai);
+      } else {
+        result.ai = { difficulty: partial.ai.difficulty };
+      }
+    }
     return result;
   }
 
@@ -209,9 +222,9 @@ export class SettingsSystem {
     return detectConflicts(bindings);
   }
 
-  resetSection(section: 'graphics' | 'audio' | 'input'): void {
-    const defaults = structuredClone(DEFAULT_SETTINGS[section]);
-    (this.data[section] as GraphicsSettings | AudioSettings | InputSettings) = defaults;
+  resetSection(section: 'graphics' | 'audio' | 'input' | 'ai'): void {
+    const defaults = structuredClone(DEFAULT_SETTINGS[section]) as (typeof this.data)['graphics'];
+    (this.data[section] as GraphicsSettings | AudioSettings | InputSettings | AiSettings) = defaults;
     this.save();
   }
 
