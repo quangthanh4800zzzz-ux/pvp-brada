@@ -1,4 +1,5 @@
 import type { AttackDef, CharacterProfile, MapDefinition } from '@shared/types/index.js';
+import { validateManifest } from '../animation/manifest.js';
 import type { AnimationManifest } from '../animation/manifest.js';
 
 export const PRA_DATA_KEY = 'pra-data';
@@ -31,6 +32,25 @@ export async function loadGameData(): Promise<LoadedData> {
   }
   validateProfiles(characters);
   return { characters, maps, manifests };
+}
+
+export function validateData(data: LoadedData): string[] {
+  return Object.entries(data.manifests).flatMap(([charId, manifest]) =>
+    validateManifest(manifest, data.characters[charId] ? data.characters[charId].attacks : []).map(
+      (err) => `${charId}:${err.code}:${err.detail}`
+    )
+  );
+}
+
+let bootData: LoadedData | null = null;
+
+export function setBootData(data: LoadedData): void {
+  bootData = data;
+}
+
+export function getBootData(): LoadedData {
+  if (!bootData) throw new Error('boot data not prepared');
+  return bootData;
 }
 
 const MAP_IDS = ['map_01'];
