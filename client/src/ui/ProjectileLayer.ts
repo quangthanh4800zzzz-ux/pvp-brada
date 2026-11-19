@@ -8,7 +8,10 @@ import type { Projectile } from '../combat/BattleSim.js';
 export class ProjectileLayer {
   private view = new Map<number, Phaser.GameObjects.Sprite>();
 
-  constructor(private readonly scene: Phaser.Scene) {}
+  constructor(
+    private readonly scene: Phaser.Scene,
+    private readonly onSpawn?: (object: Phaser.GameObjects.GameObject) => void
+  ) {}
 
   sync(projectiles: Projectile[]): void {
     const live = new Set<number>();
@@ -18,9 +21,11 @@ export class ProjectileLayer {
       const key = `fxp.${projectile.fx}`;
       if (!sprite) {
         if (!this.scene.anims.exists(key) || !this.scene.textures.exists(`fx.${projectile.fx}`)) continue;
-        sprite = this.scene.add
+        const created = this.scene.add
           .sprite(projectile.x + projectile.width / 2, projectile.y + projectile.height / 2, `fx.${projectile.fx}`, 0)
           .setDepth(60);
+        this.onSpawn?.(created);
+        sprite = created;
         sprite.play(key, true);
         this.view.set(projectile.id, sprite);
       }

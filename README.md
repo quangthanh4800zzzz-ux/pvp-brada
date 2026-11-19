@@ -6,7 +6,7 @@
 
 Development is phase-based. See [docs/IMPLEMENTATION-STATUS.md](docs/IMPLEMENTATION-STATUS.md) for the honest Complete/Partial/Not-Implemented matrix, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for system boundaries, [docs/ROADMAP.md](docs/ROADMAP.md) for remaining phases.
 
-Current state: **Phases 1–3 (core engine, combat engine, character system) implemented and unit-tested. 42/42 tests green, typecheck clean, production build green.** Includes 2 fighters (Rift Brawler / Volt Blade), skills + ultimates + projectiles + clean-hit passives, Character Select, FSM bot that uses skills. Everything else (9 more maps, survival/boss AI, multiplayer server, full Combat Lab, audio) is **not implemented** yet and is not claimed to work. See [docs/IMPLEMENTATION-STATUS.md](docs/IMPLEMENTATION-STATUS.md).
+Current state: **Phases 1–3 (core engine, combat engine, character system) implemented and unit-tested. 51/51 tests green, typecheck clean, production build green.** Includes 2 fighters (Rift Brawler / Volt Blade), skills + ultimates + projectiles + clean-hit passives, Character Select, FSM bot that uses skills. Everything else (9 more maps, survival/boss AI, multiplayer server, full Combat Lab, audio) is **not implemented** yet and is not claimed to work. See [docs/IMPLEMENTATION-STATUS.md](docs/IMPLEMENTATION-STATUS.md).
 
 ## Commands
 

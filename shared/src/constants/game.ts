@@ -2,8 +2,8 @@ export const TICK_RATE = 60;
 export const TICK_MS = 1000 / TICK_RATE;
 export const MAX_FRAME_DELTA_MS = 250;
 
-export const INTERNAL_WIDTH = 640;
-export const INTERNAL_HEIGHT = 360;
+export const INTERNAL_WIDTH = 960;
+export const INTERNAL_HEIGHT = 540;
 
 export const DEFAULT_GRAVITY = 1600;
 export const DEFAULT_GROUND_FRICTION = 1800;

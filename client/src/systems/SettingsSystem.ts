@@ -1,4 +1,4 @@
-import { ACTIONS, type Action, type KeyBindings } from '@shared/types/input.js';
+import { ACTIONS, type Action, type KeyBindings, type PartialBindings } from '@shared/types/input.js';
 
 export interface GraphicsSettings {
   pixelScaling: 'nearest' | 'linear';
@@ -24,6 +24,8 @@ export interface AudioSettings {
 export interface InputSettings {
   p1: KeyBindings;
   p2: KeyBindings;
+  altP1: PartialBindings;
+  altP2: PartialBindings;
   inputBufferFrames: number;
   guardMode: 'hold' | 'toggle';
   doubleTapDash: boolean;
@@ -82,6 +84,24 @@ export const P2_DEFAULT: KeyBindings = {
   trainingReset: 'NumpadDecimal'
 };
 
+/** Secondary skill cluster (P1: right-hand home row next to U/I/O attacks). */
+export const P1_ALT_DEFAULT: PartialBindings = {
+  skill1: 'KeyK',
+  skill2: 'KeyL',
+  skill3: 'Semicolon',
+  skill4: 'Quote',
+  ultimate: 'KeyP'
+};
+
+/** Secondary skill cluster for the arrow-keys player. */
+export const P2_ALT_DEFAULT: PartialBindings = {
+  skill1: 'Digit7',
+  skill2: 'Digit8',
+  skill3: 'Digit9',
+  skill4: 'Digit0',
+  ultimate: 'Backslash'
+};
+
 export const DEFAULT_SETTINGS: SettingsData = {
   version: 1,
   graphics: {
@@ -98,6 +118,8 @@ export const DEFAULT_SETTINGS: SettingsData = {
   input: {
     p1: { ...P1_DEFAULT },
     p2: { ...P2_DEFAULT },
+    altP1: { ...P1_ALT_DEFAULT },
+    altP2: { ...P2_ALT_DEFAULT },
     inputBufferFrames: 8,
     guardMode: 'hold',
     doubleTapDash: true,
@@ -111,7 +133,7 @@ export interface KeyConflict {
   actions: Action[];
 }
 
-export function detectConflicts(bindings: KeyBindings): KeyConflict[] {
+export function detectConflicts(bindings: KeyBindings, alt?: PartialBindings): KeyConflict[] {
   const byKey = new Map<string, Action[]>();
   for (const action of ACTIONS) {
     const key = bindings[action];
@@ -119,6 +141,14 @@ export function detectConflicts(bindings: KeyBindings): KeyConflict[] {
     const list = byKey.get(key) ?? [];
     list.push(action);
     byKey.set(key, list);
+  }
+  if (alt) {
+    for (const [action, key] of Object.entries(alt) as [Action, string | undefined][]) {
+      if (!key) continue;
+      const list = byKey.get(key) ?? [];
+      if (!list.includes(action)) list.push(action);
+      byKey.set(key, list);
+    }
   }
   const conflicts: KeyConflict[] = [];
   for (const [key, actions] of byKey) {
@@ -203,6 +233,8 @@ export class SettingsSystem {
     if (partial.input) {
       if (partial.input.p1 && isValidBindingShape(partial.input.p1)) result.input.p1 = { ...partial.input.p1 };
       if (partial.input.p2 && isValidBindingShape(partial.input.p2)) result.input.p2 = { ...partial.input.p2 };
+      if (partial.input.altP1) result.input.altP1 = sanitizeBindings(partial.input.altP1, result.input.altP1);
+      if (partial.input.altP2) result.input.altP2 = sanitizeBindings(partial.input.altP2, result.input.altP2);
       const buffer = Number(partial.input.inputBufferFrames);
       if (Number.isFinite(buffer)) result.input.inputBufferFrames = Math.min(20, Math.max(0, Math.trunc(buffer)));
     }
@@ -219,7 +251,14 @@ export class SettingsSystem {
   rebind(player: 'p1' | 'p2', action: Action, key: string): KeyConflict[] {
     const bindings = this.data.input[player];
     bindings[action] = key;
-    return detectConflicts(bindings);
+    return detectConflicts(bindings, player === 'p1' ? this.data.input.altP1 : this.data.input.altP2);
+  }
+
+  rebindAlt(player: 'p1' | 'p2', action: Action, key: string): KeyConflict[] {
+    const alt = this.data.input[player === 'p1' ? 'altP1' : 'altP2'];
+    if (key) alt[action] = key;
+    else delete alt[action];
+    return detectConflicts(this.data.input[player], alt);
   }
 
   resetSection(section: 'graphics' | 'audio' | 'input' | 'ai'): void {
@@ -247,4 +286,12 @@ export class SettingsSystem {
 
 function isValidBindingShape(bindings: Partial<KeyBindings>): bindings is KeyBindings {
   return ACTIONS.every((action) => typeof bindings[action] === 'string' && (bindings[action] as string).length > 0);
+}
+
+function sanitizeBindings(partial: PartialBindings, fallback: PartialBindings): PartialBindings {
+  const result: PartialBindings = { ...fallback };
+  for (const [action, key] of Object.entries(partial) as [Action, string | undefined][]) {
+    if (typeof key === 'string' && key.length > 0) result[action] = key;
+  }
+  return result;
 }

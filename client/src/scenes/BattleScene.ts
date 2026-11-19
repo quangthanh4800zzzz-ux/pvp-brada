@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { emptyIntent, type Intent } from '@shared/types/input.js';
-import { TICK_RATE } from '@shared/constants/game.js';
+import { INTERNAL_HEIGHT, INTERNAL_WIDTH, TICK_RATE } from '@shared/constants/game.js';
+import { toggleFullscreen, wireFullscreenToggle } from '../utils/fullscreen.js';
 import { PRA_DATA_KEY, type LoadedData } from '../core/DataLoader.js';
 import { FixedTimestepLoop } from '../core/FixedTimestepLoop.js';
 import { BattleSim, type CombatEvent } from '../combat/BattleSim.js';
@@ -25,6 +26,7 @@ export class BattleScene extends Phaser.Scene {
   private fx!: FxLayer;
   private projectileLayer!: ProjectileLayer;
   private hud!: BattleHud;
+  private uiCam!: Phaser.Cameras.Scene2D.Camera;
   private inputSystem = new InputSystem();
   private source1!: ManualKeySource;
   private source2!: ManualKeySource;
@@ -44,6 +46,10 @@ export class BattleScene extends Phaser.Scene {
   private crashed = false;
   private readonly keyDown = (event: KeyboardEvent): void => this.handleKey(event, true);
   private readonly keyUp = (event: KeyboardEvent): void => this.handleKey(event, false);
+
+  private readonly ignoreOnUi = (object: Phaser.GameObjects.GameObject): void => {
+    if (this.uiCam) this.uiCam.ignore(object);
+  };
 
   constructor() {
     super('Battle');
@@ -74,11 +80,15 @@ export class BattleScene extends Phaser.Scene {
     if (this.training) this.sim.trainingMode = true;
 
     this.cameras.main.setBackgroundColor('#0b0e14');
+    this.cameras.main.setZoom(1.5);
+    this.uiCam = this.cameras.add(0, 0, INTERNAL_WIDTH, INTERNAL_HEIGHT, false, 'ui');
+    this.input.keyboard?.addCapture('F');
+    wireFullscreenToggle(this);
     this.mapRenderer = new MapRenderer(this, map, this.sim.physics, { parallax: settings.data.graphics.parallax });
     this.mapRenderer.syncMovers(this.sim.physics);
 
-    this.fx = new FxLayer(this);
-    this.projectileLayer = new ProjectileLayer(this);
+    this.fx = new FxLayer(this, this.ignoreOnUi);
+    this.projectileLayer = new ProjectileLayer(this, this.ignoreOnUi);
     this.debugGfx = this.add.graphics().setDepth(900);
 
     const tints = [0xffffff, 0x9de1ff] as const;
@@ -95,16 +105,20 @@ export class BattleScene extends Phaser.Scene {
       )
     );
 
+    this.uiCam.ignore(this.children.list.slice());
+
     this.hud = new BattleHud(
       this,
       [`${profile.name} · P1`, this.training ? 'DUMMY' : `${profile2.name} · P2`],
       [0x2ec4b6, 0xc2547a]
     );
+    this.cameras.main.ignore(this.hud.uiObjects);
 
     this.frameDataText = this.add
-      .text(12, 320, '', { fontFamily: 'monospace', fontSize: '8px', color: '#9de1ff' })
+      .text(18, 506, '', { fontFamily: 'monospace', fontSize: '11px', color: '#9de1ff' })
       .setScrollFactor(0)
       .setDepth(1001);
+    this.cameras.main.ignore(this.frameDataText);
 
     this.cameras.main.setBounds(0, 0, map.bounds.width, map.bounds.height);
 
@@ -120,12 +134,20 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private stepSim(): void {
-    const intent1 = this.inputSystem.poll(settings.data.input.p1, this.source1.snapshot());
+    const intent1 = this.inputSystem.poll(
+      settings.data.input.p1,
+      this.source1.snapshot(),
+      settings.data.input.altP1
+    );
     const intent2: Intent = this.training
       ? emptyIntent()
       : this.vsAi && this.bot
         ? this.bot.think()
-        : this.inputSystem.poll(settings.data.input.p2, this.source2.snapshot());
+        : this.inputSystem.poll(
+            settings.data.input.p2,
+            this.source2.snapshot(),
+            this.soloControl ? settings.data.input.altP1 : settings.data.input.altP2
+          );
     const events = this.sim.step([intent1, intent2]);
     this.handleEvents(events);
   }
@@ -140,9 +162,11 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private wireKeyboard(): void {
-    const players: [ManualKeySource, Record<string, string>][] = [
+    const players: [ManualKeySource, Record<string, string> | Record<string, string | undefined>][] = [
       [this.source1, settings.data.input.p1],
-      [this.soloControl ? this.source1 : this.source2, settings.data.input.p2]
+      [this.source1, settings.data.input.altP1],
+      [this.soloControl ? this.source1 : this.source2, settings.data.input.p2],
+      [this.soloControl ? this.source1 : this.source2, settings.data.input.altP2]
     ];
     for (const [source, bindings] of players) {
       for (const code of Object.values(bindings)) {
@@ -206,16 +230,17 @@ export class BattleScene extends Phaser.Scene {
   private showFatalError(error: Error): void {
     this.resultText?.destroy();
     this.resultText = this.add
-      .text(320, 150, `RUNTIME ERROR\n${error.message}\n\nESC: menu`, {
+      .text(INTERNAL_WIDTH / 2, 230, `RUNTIME ERROR\n${error.message}\n\nESC: menu`, {
         fontFamily: 'monospace',
-        fontSize: '10px',
+        fontSize: '14px',
         color: '#ff8a8a',
         align: 'center',
-        wordWrap: { width: 500 }
+        wordWrap: { width: 720 }
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(1200);
+    this.cameras.main.ignore(this.resultText);
   }
 
   private frameDataLine(training: boolean): string {
@@ -238,14 +263,15 @@ export class BattleScene extends Phaser.Scene {
         this.roundEndCooldown = 150;
         this.resultText?.destroy();
         this.resultText = this.add
-          .text(320, 160, event.winner === null ? 'DRAW' : `ROUND WIN: P${event.winner}`, {
+          .text(INTERNAL_WIDTH / 2, 240, event.winner === null ? 'DRAW' : `ROUND WIN: P${event.winner}`, {
             fontFamily: 'monospace',
-            fontSize: '20px',
+            fontSize: '30px',
             color: '#ffd166'
           })
           .setOrigin(0.5)
           .setScrollFactor(0)
           .setDepth(1100);
+        this.cameras.main.ignore(this.resultText);
       }
       if (event.type === 'hit') {
         const shake = settings.data.graphics.screenShake;

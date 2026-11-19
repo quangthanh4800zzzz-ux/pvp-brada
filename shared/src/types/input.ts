@@ -22,6 +22,7 @@ export const ACTIONS = [
 
 export type Action = (typeof ACTIONS)[number];
 export type KeyBindings = Record<Action, string>;
+export type PartialBindings = Partial<KeyBindings>;
 
 export interface Intent {
   moveX: -1 | 0 | 1;

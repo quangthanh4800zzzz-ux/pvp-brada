@@ -2,6 +2,11 @@ import Phaser from 'phaser';
 import type { CharacterProfile } from '@shared/types/index.js';
 import { PRA_DATA_KEY, type LoadedData } from '../core/DataLoader.js';
 import { runGuarded } from './crashGuard.js';
+import { settings } from '../gameConfig.js';
+import { keyLabel } from '../utils/keyLabel.js';
+import { wireFullscreenToggle } from '../utils/fullscreen.js';
+import { INTERNAL_WIDTH } from '@shared/constants/game.js';
+import type { Action } from '@shared/types/input.js';
 
 type SelectMode = 'battle' | 'vsai' | 'training';
 
@@ -54,19 +59,19 @@ export class CharacterSelectScene extends Phaser.Scene {
     if (this.roster.length === 0) throw new Error('empty roster');
 
     this.cameras.main.setBackgroundColor('#0b0e14');
-    this.add.rectangle(0, 0, 640, 30, 0x101527).setOrigin(0);
-    this.add.rectangle(0, 28, 640, 2, 0x00b8d9).setOrigin(0);
+    this.add.rectangle(0, 0, INTERNAL_WIDTH, 44, 0x101527).setOrigin(0);
+    this.add.rectangle(0, 40, INTERNAL_WIDTH, 3, 0x00b8d9).setOrigin(0);
     this.heading = this.add
-      .text(320, 15, 'P1: CHỌN NHÂN VẬT', { fontFamily: 'monospace', fontSize: '14px', color: '#9de1ff' })
+      .text(INTERNAL_WIDTH / 2, 22, 'P1: CHỌN NHÂN VẬT', { fontFamily: 'monospace', fontSize: '20px', color: '#9de1ff' })
       .setOrigin(0.5);
 
     this.roster.forEach((profile, index) => {
-      const x = 40 + index * 96;
-      const box = this.add.rectangle(x, 44, 86, 100, 0x1b2036).setOrigin(0).setStrokeStyle(2, 0x2a3352);
-      const portrait = this.add.sprite(x + 43, 138, `${profile.id}.idle`, 0).setOrigin(0.5, 1).setScale(1.5);
+      const x = 60 + index * 150;
+      const box = this.add.rectangle(x, 60, 130, 156, 0x1b2036).setOrigin(0).setStrokeStyle(2, 0x2a3352);
+      const portrait = this.add.sprite(x + 65, 200, `${profile.id}.idle`, 0).setOrigin(0.5, 1).setScale(2.4);
       if (this.anims.exists(`${profile.id}.idle`)) portrait.play(`${profile.id}.idle`, true);
       const name = this.add
-        .text(x + 43, 150, profile.name, { fontFamily: 'monospace', fontSize: '9px', color: '#c7cdf0' })
+        .text(x + 65, 208, profile.name, { fontFamily: 'monospace', fontSize: '13px', color: '#c7cdf0' })
         .setOrigin(0.5, 0);
       box.setInteractive({ useHandCursor: true });
       box.on('pointerover', () => {
@@ -83,28 +88,28 @@ export class CharacterSelectScene extends Phaser.Scene {
     });
 
     STAT_ROWS.forEach((row, i) => {
-      const y = 170 + i * 14;
-      this.add.text(16, y, row.label, { fontFamily: 'monospace', fontSize: '9px', color: '#8a8fb0' });
-      this.add.rectangle(56, y + 4, 120, 6, 0x141a2c).setOrigin(0, 0.5);
-      this.statBars.push(this.add.rectangle(57, y + 4, 10, 4, 0x2ec4b6).setOrigin(0, 0.5));
+      const y = 250 + i * 20;
+      this.add.text(24, y, row.label, { fontFamily: 'monospace', fontSize: '13px', color: '#8a8fb0' });
+      this.add.rectangle(84, y + 6, 180, 9, 0x141a2c).setOrigin(0, 0.5);
+      this.statBars.push(this.add.rectangle(86, y + 6, 14, 5, 0x2ec4b6).setOrigin(0, 0.5));
     });
 
-    this.skillsText = this.add.text(16, 258, '', {
+    this.skillsText = this.add.text(24, 396, '', {
       fontFamily: 'monospace',
-      fontSize: '8px',
+      fontSize: '12px',
       color: '#c7cdf0',
-      wordWrap: { width: 250 },
-      lineSpacing: 2
+      wordWrap: { width: 390 },
+      lineSpacing: 3
     });
 
-    this.add.rectangle(290, 44, 334, 188, 0x101527).setOrigin(0);
-    this.preview = this.add.sprite(335, 225, `${this.roster[0]!.id}.idle`, 0).setOrigin(0.5, 1).setScale(3.2);
-    this.confirmText = this.add.text(420, 60, '', {
+    this.add.rectangle(450, 60, 494, 300, 0x101527).setOrigin(0);
+    this.preview = this.add.sprite(690, 346, `${this.roster[0]!.id}.idle`, 0).setOrigin(0.5, 1).setScale(4.8);
+    this.confirmText = this.add.text(640, 92, '', {
       fontFamily: 'monospace',
-      fontSize: '10px',
+      fontSize: '15px',
       color: '#ffd166',
-      wordWrap: { width: 190 },
-      lineSpacing: 3
+      wordWrap: { width: 290 },
+      lineSpacing: 4
     });
 
     const kb = this.input.keyboard;
@@ -114,10 +119,11 @@ export class CharacterSelectScene extends Phaser.Scene {
     kb?.on('keydown-D', () => this.move(1));
     kb?.on('keydown-ENTER', () => this.confirm());
     kb?.on('keydown-ESC', () => this.scene.start('MainMenu'));
+    wireFullscreenToggle(this);
     this.add
-      .text(320, 340, '← → / A D: chọn · ENTER / click: xác nhận · ESC: menu', {
+      .text(INTERNAL_WIDTH / 2, 512, '← → / A D: chọn · ENTER / click: xác nhận · F: toàn màn hình · ESC: menu', {
         fontFamily: 'monospace',
-        fontSize: '10px',
+        fontSize: '15px',
         color: '#8a8fb0'
       })
       .setOrigin(0.5);
@@ -150,18 +156,22 @@ export class CharacterSelectScene extends Phaser.Scene {
       const bar = this.statBars[i];
       if (!bar) return;
       const value = profile.stats[row.key];
-      bar.setSize(Math.max(6, Math.round((value / row.max) * 118)), 4);
+      bar.setSize(Math.max(8, Math.round((value / row.max) * 176)), 5);
       bar.setFillStyle(value >= row.max * 0.75 ? 0x2ec4b6 : value >= row.max * 0.45 ? 0xffd166 : 0xc2547a);
     });
 
     const skills = (profile.skills ?? [])
-      .map((s) => (s.slot === 5 ? '[ULT]' : `[S${s.slot}]`) + ` ${s.name} — ${s.energyCost} EN, ${s.cooldown}f CD`)
+      .map(
+        (s) =>
+          (s.slot === 5 ? `[ULT ${this.skillKeys('ultimate', 5)}]` : `[S${s.slot} ${this.skillKeys(`skill${s.slot}` as Action, s.slot)}]`) +
+          ` ${s.name} — ${s.energyCost} EN, ${s.cooldown}f CD`
+      )
       .join('\n');
     const passive = profile.passives[0];
     if (this.skillsText) {
       this.skillsText.setText(
         [
-          'SKILLS: S1 S2 S3 S4 · ULT phím H',
+          '',
           skills || '(chưa có skill)',
           '',
           `PASSIVE — ${passive ? passive.name : 'none'}: ${passive ? passive.description : ''}`
@@ -191,6 +201,17 @@ export class CharacterSelectScene extends Phaser.Scene {
     }
   }
 
+  private skillKeys(action: Action, slot: number): string {
+    const input = settings.data.input;
+    const bindings = input.p1;
+    const alt = input.altP1;
+    const primary = bindings[action];
+    const alternate = alt[action];
+    const labels = [keyLabel(primary)];
+    if (alternate && alternate !== primary) labels.push(keyLabel(alternate));
+    return labels.join('/');
+  }
+
   private confirm(): void {
     const chosen = this.roster[this.cursor]?.id;
     if (!chosen) return;
@@ -208,3 +229,4 @@ export class CharacterSelectScene extends Phaser.Scene {
     });
   }
 }
+

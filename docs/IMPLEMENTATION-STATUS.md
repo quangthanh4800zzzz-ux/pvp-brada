@@ -62,6 +62,7 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 
 ## Known issues / caveats
 
+- **Resolution upgrade (fix round 2)**: internal canvas 640×360 → **960×540** (16:9, FIT, nearest). The battle scene renders the world through a camera zoomed 1.5× (identical world framing — same 640×360 view window —, fighters same apparent size) while ALL UI (HUD, menus, text) renders through a dedicated un-zoomed UI camera at 960×540 → text and HUD are ~1.5× sharper than before at the same apparent size. F toggles fullscreen in menu/select/battle/settings.
 - **No browser playtest yet** — sandbox has no headless browser; verification is via vitest + `vite build` + a disposable real-Phaser headless harness (since removed) that reproduced and verified the fixes for the freeze bugs below. First real manual playtest pending.
 - **Fixed 2025 (freeze round)**: three real bugs caused "pressing attack freezes the page": (1) Phaser keyboard event names are Phaser KeyMap names (`keydown-U`), not `event.code` (`keydown-KeyU`) — battle inputs were dead; BattleScene now wires window DOM listeners on `event.code`; (2) sprite-sheet manifest paths missing the `assets/` prefix → 404 textures → empty/missing animations; (3) playing a nonexistent animation throws mid-frame and kills Phaser's rAF chain → full-page freeze; BootScene skips missing textures/anims, FighterAnimator guards `play()` on `anims.exists`, and BattleScene create/update are wrapped in crash guards that render an on-screen RUNTIME ERROR panel instead of freezing.
 - Procedural sprites are explicitly temporary stand-ins (replaceable via manifest) — not claimed to be final art.
@@ -70,10 +71,11 @@ Legend: ✅ Complete · 🟡 Partial · ❌ Not Implemented
 - Buff indicator is a temporary sprite tint (0xffdd88) + aura burst fx; HUD buff icon pending.
 - Frame-advantage display, dummy options, and physics sandbox in training: not implemented.
 - Solo control: in VS AI / Combat Lab P1 accepts BOTH WASD and arrow-key bindings (VS BATTLE keeps separate P1/P2 schemes).
+- **Skill hotkeys (fix round 2)**: every skill + ultimate now has TWO bound key profiles — the primary (P1: Digit1–4 / H) and a new **alt cluster** right next to the attack keys (P1: K / L / ; / ' / P). Both profiles work simultaneously; rebindable + conflict-checked in Settings → "ALT SKILL KEYS (P1)" (covers saved-settings migration + conflict detection via tests). The battle HUD renders 5 skill slots per player showing the real key labels, dimmed while on cooldown or low energy.
 
 ## Tests run
 
-`npm run test` — 42 passing across 5 suites (loop 4, physics 7, combat 18, bot AI 4, skills 9). Tests caught and forced fixes for 10 real engine bugs (physics tunneling, shallow-floor teleport, guard direction inversion, cooldowns never ticking, sim constructor stats reference, accumulator epsilon, spawn alignment, guard-break pushback drift, passive trigger-string mismatch, grounded-settle in skill activation paths).
+`npm run test` — 51 passing across 6 suites (loop 4, physics 7, combat 18, bot AI 4, skills 9, settings 9: alt-binding defaults, legacy-save migration, conflict detection, alt-key intents). Tests caught and forced fixes for 10 real engine bugs (physics tunneling, shallow-floor teleport, guard direction inversion, cooldowns never ticking, sim constructor stats reference, accumulator epsilon, spawn alignment, guard-break pushback drift, passive trigger-string mismatch, grounded-settle in skill activation paths).
 
 `npm run typecheck` — clean across shared/client/server.
 `npm run build` — production build ✓.

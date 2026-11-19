@@ -1,14 +1,17 @@
 import Phaser from 'phaser';
+import { INTERNAL_HEIGHT, INTERNAL_WIDTH } from '@shared/constants/game.js';
 
 export const showFatalPanel = (scene: Phaser.Scene, error: Error): void => {
-  scene.add.rectangle(320, 180, 640, 360, 0x2b0d12, 0.94).setDepth(1200);
   scene.add
-    .text(320, 160, `RUNTIME ERROR\n${error.message}\n\nESC: menu`, {
+    .rectangle(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2, INTERNAL_WIDTH, INTERNAL_HEIGHT, 0x2b0d12, 0.94)
+    .setDepth(1200);
+  scene.add
+    .text(INTERNAL_WIDTH / 2, INTERNAL_HEIGHT / 2 - 20, `RUNTIME ERROR\n${error.message}\n\nESC: menu`, {
       fontFamily: 'monospace',
-      fontSize: '13px',
+      fontSize: '18px',
       color: '#ff8a8a',
       align: 'center',
-      wordWrap: { width: 560 }
+      wordWrap: { width: 840 }
     })
     .setOrigin(0.5)
     .setDepth(1201);

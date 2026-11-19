@@ -1,4 +1,4 @@
-import { ACTIONS, emptyIntent, type Action, type Intent, type KeyBindings } from '@shared/types/input.js';
+import { ACTIONS, emptyIntent, type Action, type Intent, type KeyBindings, type PartialBindings } from '@shared/types/input.js';
 
 export interface KeySnapshot {
   down: Set<string>;
@@ -86,15 +86,19 @@ export class InputSystem {
   buffer: BufferedInput[] = [];
   bufferFrames = 8;
 
-  poll(bindings: KeyBindings, snapshot: KeySnapshot): Intent {
+  poll(bindings: KeyBindings, snapshot: KeySnapshot, alt?: PartialBindings): Intent {
     const intent = emptyIntent();
     const lookup = (action: Action): boolean => {
-      const code = bindings[action];
-      return code !== undefined && snapshot.consumePressed.has(code);
+      const primary = bindings[action];
+      if (primary !== undefined && snapshot.consumePressed.has(primary)) return true;
+      const alternate = alt?.[action];
+      return alternate !== undefined && snapshot.consumePressed.has(alternate);
     };
     const held = (action: Action): boolean => {
-      const code = bindings[action];
-      return code !== undefined && snapshot.down.has(code);
+      const primary = bindings[action];
+      if (primary !== undefined && snapshot.down.has(primary)) return true;
+      const alternate = alt?.[action];
+      return alternate !== undefined && snapshot.down.has(alternate);
     };
 
     const left = held('moveLeft');
@@ -118,8 +122,9 @@ export class InputSystem {
     intent.dropThroughPressed = held('down') && lookup('jump');
 
     for (const key of snapshot.consumePressed) {
-      if (key === bindings.pause) this.buffer.push({ action: 'pause', ttl: this.bufferFrames });
-      if (key === bindings.trainingReset) this.buffer.push({ action: 'trainingReset', ttl: this.bufferFrames });
+      if (key === bindings.pause || key === alt?.pause) this.buffer.push({ action: 'pause', ttl: this.bufferFrames });
+      if (key === bindings.trainingReset || key === alt?.trainingReset)
+        this.buffer.push({ action: 'trainingReset', ttl: this.bufferFrames });
     }
 
     if (intent.attackPressed) {

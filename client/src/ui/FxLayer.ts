@@ -8,7 +8,10 @@ import type { CombatEvent } from '../combat/BattleSim.js';
 export class FxLayer {
   private pool: Phaser.GameObjects.Sprite[] = [];
 
-  constructor(private scene: Phaser.Scene) {}
+  constructor(
+    private scene: Phaser.Scene,
+    private readonly onSpawn?: (object: Phaser.GameObjects.GameObject) => void
+  ) {}
 
   handle(events: CombatEvent[], sims: { x: number; y: number }[]): void {
     for (const event of events) {
@@ -20,12 +23,18 @@ export class FxLayer {
   }
 
   spawn(key: string, x: number, y: number): Phaser.GameObjects.Sprite {
-    const sprite = this.pool.pop() ?? this.scene.add.sprite(x, y, key, 0);
+    const sprite = this.pool.pop() ?? this.createSprite(x, y, key);
     sprite.setPosition(x, y);
     sprite.setOrigin(0.5, 0.5);
     sprite.setVisible(true).setActive(true).setDepth(50);
     sprite.play(key, true);
     sprite.once('animationcomplete', () => this.recycle(sprite));
+    return sprite;
+  }
+
+  private createSprite(x: number, y: number, key: string): Phaser.GameObjects.Sprite {
+    const sprite = this.scene.add.sprite(x, y, key, 0);
+    this.onSpawn?.(sprite);
     return sprite;
   }
 
