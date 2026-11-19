@@ -1,0 +1,16 @@
+{
+  "name": "@pra/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "generate": "node tools/generate-sprites.mjs"
+  },
+  "dependencies": {
+    "@pra/shared": "*",
+    "phaser": "^3.90.0"
+  }
+}

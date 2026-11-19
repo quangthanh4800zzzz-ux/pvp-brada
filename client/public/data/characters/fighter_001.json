@@ -1,0 +1,145 @@
+{
+  "id": "fighter_001",
+  "name": "Rift Brawler",
+  "archetype": "Rushdown",
+  "difficulty": 2,
+  "stats": {
+    "hp": 1000,
+    "energy": 100,
+    "atk": 100,
+    "def": 100,
+    "spd": 105,
+    "jump": 105,
+    "range": 95
+  },
+  "attacks": [
+    {
+      "id": "light",
+      "kind": "light",
+      "name": "Jab",
+      "damage": 40,
+      "energyCost": 0,
+      "cooldown": 6,
+      "frames": { "startup": 4, "active": 3, "recovery": 8 },
+      "hitboxWindows": [
+        { "startFrame": 4, "endFrame": 6, "box": { "offsetX": 6, "offsetY": 16, "width": 20, "height": 8 }, "damageMultiplier": 1 }
+      ],
+      "guardHeight": "mid",
+      "hitstun": 18,
+      "blockstun": 8,
+      "knockbackX": 110,
+      "knockbackY": 0,
+      "hitstop": "light",
+      "comboScaling": 0.88,
+      "canBeBlocked": true,
+      "airOk": false,
+      "requiresGrounded": false,
+      "animation": "light"
+    },
+    {
+      "id": "medium",
+      "kind": "medium",
+      "name": "Hook",
+      "damage": 70,
+      "energyCost": 0,
+      "cooldown": 18,
+      "frames": { "startup": 8, "active": 5, "recovery": 14 },
+      "hitboxWindows": [
+        { "startFrame": 8, "endFrame": 12, "box": { "offsetX": 6, "offsetY": 8, "width": 24, "height": 14 }, "damageMultiplier": 1 }
+      ],
+      "guardHeight": "mid",
+      "hitstun": 26,
+      "blockstun": 12,
+      "knockbackX": 190,
+      "knockbackY": 0,
+      "hitstop": "medium",
+      "comboScaling": 0.85,
+      "canBeBlocked": true,
+      "airOk": false,
+      "requiresGrounded": false,
+      "animation": "medium"
+    },
+    {
+      "id": "heavy",
+      "kind": "heavy",
+      "name": "Rising Break",
+      "damage": 110,
+      "energyCost": 8,
+      "cooldown": 45,
+      "frames": { "startup": 15, "active": 6, "recovery": 23 },
+      "hitboxWindows": [
+        { "startFrame": 15, "endFrame": 20, "box": { "offsetX": 4, "offsetY": -6, "width": 22, "height": 30 }, "damageMultiplier": 1 }
+      ],
+      "guardHeight": "mid",
+      "hitstun": 34,
+      "blockstun": 16,
+      "knockbackX": 160,
+      "knockbackY": -330,
+      "hitstop": "heavy",
+      "comboScaling": 0.82,
+      "canBeBlocked": true,
+      "airOk": false,
+      "requiresGrounded": true,
+      "armorFrames": [10, 14],
+      "animation": "heavy"
+    },
+    {
+      "id": "air_light",
+      "kind": "air",
+      "name": "Sky Cutter",
+      "damage": 55,
+      "energyCost": 0,
+      "cooldown": 10,
+      "frames": { "startup": 5, "active": 4, "recovery": 12 },
+      "hitboxWindows": [
+        { "startFrame": 5, "endFrame": 8, "box": { "offsetX": 5, "offsetY": 10, "width": 22, "height": 16 }, "damageMultiplier": 1 }
+      ],
+      "guardHeight": "high",
+      "hitstun": 24,
+      "blockstun": 10,
+      "knockbackX": 150,
+      "knockbackY": -60,
+      "hitstop": "light",
+      "comboScaling": 0.85,
+      "canBeBlocked": true,
+      "airOk": true,
+      "requiresGrounded": false,
+      "animation": "airAttack"
+    },
+    {
+      "id": "dash_attack",
+      "kind": "dashAttack",
+      "name": "Shoulder Rush",
+      "damage": 60,
+      "energyCost": 0,
+      "cooldown": 30,
+      "frames": { "startup": 6, "active": 5, "recovery": 16 },
+      "hitboxWindows": [
+        { "startFrame": 6, "endFrame": 10, "box": { "offsetX": 8, "offsetY": 10, "width": 22, "height": 16 }, "damageMultiplier": 1 }
+      ],
+      "guardHeight": "low",
+      "hitstun": 22,
+      "blockstun": 10,
+      "knockbackX": 210,
+      "knockbackY": -120,
+      "hitstop": "medium",
+      "comboScaling": 0.85,
+      "canBeBlocked": true,
+      "airOk": false,
+      "requiresGrounded": false,
+      "forwardLunge": 260,
+      "animation": "medium"
+    }
+  ],
+  "passives": [
+    {
+      "id": "momentum",
+      "name": "Momentum",
+      "description": "Successful non-blocked hits grant +4 energy and slightly increase dash speed for 90 frames.",
+      "trigger": "clean hit",
+      "coeff": 4,
+      "cooldown": 0,
+      "stacking": false
+    }
+  ]
+}

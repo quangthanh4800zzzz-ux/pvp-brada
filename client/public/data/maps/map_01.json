@@ -1,0 +1,40 @@
+{
+  "id": "map_01",
+  "name": "Neon Rooftop",
+  "theme": "future city night, rain, neon signs, parallax skyline",
+  "bounds": { "width": 960, "height": 360 },
+  "spawn1": { "x": 210, "y": 278 },
+  "spawn2": { "x": 750, "y": 278 },
+  "solids": [
+    { "x": 0, "y": 312, "width": 960, "height": 48, "visual": "ground" },
+    { "x": 200, "y": 240, "width": 120, "height": 8, "oneWay": true, "visual": "platform" },
+    { "x": 640, "y": 240, "width": 120, "height": 8, "oneWay": true, "visual": "platform" },
+    { "x": 430, "y": 170, "width": 110, "height": 8, "oneWay": true, "visual": "platform" }
+  ],
+  "movers": [
+    { "id": "billboard_lift", "x": 20, "y": 180, "width": 96, "height": 8, "axis": "y", "distance": 30, "periodMs": 4200, "phase": 0.25 }
+  ],
+  "zones": [
+    {
+      "id": "puddle",
+      "region": { "x": 300, "y": 296, "width": 140, "height": 16 },
+      "frictionMultiplier": 0.35,
+      "movementMultiplier": 0.92,
+      "flags": ["wet", "splash"]
+    },
+    {
+      "id": "wind_gust",
+      "region": { "x": 560, "y": 80, "width": 200, "height": 200 },
+      "horizontalForce": -26,
+      "flags": ["wind"]
+    },
+    {
+      "id": "sign_area",
+      "region": { "x": 820, "y": 160, "width": 120, "height": 60 },
+      "damageMultiplier": 1.08,
+      "flags": ["neon"]
+    }
+  ],
+  "sky": [ [10, 12, 34], [26, 20, 56], [48, 22, 78] ],
+  "parallaxSeed": 7
+}
